@@ -21,6 +21,7 @@ export default function NewContentPage() {
   const { profile } = useCurrentUser()
   const createItem = useMutation(api.content.createFromAuth)
   const startIngestion = useAction(api.ingestion.startIngestion)
+  const processRawText = useAction(api.ingestion.processRawText)
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('url')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -141,14 +142,24 @@ export default function NewContentPage() {
     setError('')
     try {
       const text = await selectedFile.text()
-      const title = selectedFile.name.replace(/\.[^/.]+$/, '')
-      await createItem({
-        type: selectedFile.name.endsWith('.pdf') ? 'pdf' as const : 'note' as const,
-        title,
-        content: text,
+      const rawTitle = selectedFile.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ')
+      await processRawText({
+        title: rawTitle,
+        rawText: text,
+        type: selectedFile.name.endsWith('.pdf') ? 'pdf' : 'note',
       })
       router.push('/dashboard/library')
     } catch (err) {
+      if (err instanceof Error) {
+        try {
+          const data = JSON.parse(err.message)
+          if (data?.code === 'RATE_LIMIT_EXCEEDED') {
+            const resetAt = data.resetAt ? new Date(data.resetAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'next month'
+            setError(`You've reached your source import limit for this month. Resets on ${resetAt}.`)
+            return
+          }
+        } catch { /* not JSON */ }
+      }
       const message = err instanceof Error ? err.message : 'Failed to process file.'
       setError(message)
     } finally {

@@ -30,6 +30,42 @@ export const saveContentItem = internalMutation({
 })
 
 /**
+ * Internal mutation to insert a content item from the raw text pipeline.
+ * Unlike saveContentItem, url and embeddingId are optional —
+ * uploaded files don't have a URL, and embedding may fail gracefully.
+ *
+ * @internal — called from ingestion.processRawText
+ */
+export const insertContentItem = internalMutation({
+  args: {
+    userId: v.id("profiles"),
+    type: v.union(
+      v.literal("article"),
+      v.literal("video"),
+      v.literal("note"),
+      v.literal("tweet"),
+      v.literal("pdf"),
+    ),
+    title: v.string(),
+    rawText: v.string(),
+    summary: v.optional(v.string()),
+    embeddingId: v.optional(v.string()),
+  },
+  returns: v.id("contentItems"),
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("contentItems", {
+      userId: args.userId,
+      type: args.type,
+      title: args.title,
+      rawText: args.rawText,
+      summary: args.summary || undefined,
+      embeddingId: args.embeddingId || undefined,
+      status: "ready",
+    })
+  },
+})
+
+/**
  * Internal query to get item status (for ingestion polling).
  */
 export const getItemStatus = internalQuery({
