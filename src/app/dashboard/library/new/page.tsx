@@ -6,6 +6,7 @@ import { api } from '../../../../../convex/_generated/api'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
+import { extractPdfText } from '@/lib/extractPdfText'
 
 type ActiveTab = 'url' | 'note' | 'upload'
 
@@ -141,8 +142,23 @@ export default function NewContentPage() {
     setIsUploading(true)
     setError('')
     try {
-      const text = await selectedFile.text()
-      const rawTitle = selectedFile.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ')
+      let text: string
+
+      if (selectedFile.name.endsWith('.pdf')) {
+        text = await extractPdfText(selectedFile)
+        if (!text || text.trim().length < 50) {
+          setError('This PDF appears to be scanned or image-based and cannot be extracted. Try a text-based PDF.')
+          setIsUploading(false)
+          return
+        }
+      } else {
+        text = await selectedFile.text()
+      }
+
+      const rawTitle = selectedFile.name
+        .replace(/\.[^/.]+$/, '')
+        .replace(/[-_]/g, ' ')
+
       await processRawText({
         title: rawTitle,
         rawText: text,
@@ -150,18 +166,10 @@ export default function NewContentPage() {
       })
       router.push('/dashboard/library')
     } catch (err) {
-      if (err instanceof Error) {
-        try {
-          const data = JSON.parse(err.message)
-          if (data?.code === 'RATE_LIMIT_EXCEEDED') {
-            const resetAt = data.resetAt ? new Date(data.resetAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'next month'
-            setError(`You've reached your source import limit for this month. Resets on ${resetAt}.`)
-            return
-          }
-        } catch { /* not JSON */ }
-      }
-      const message = err instanceof Error ? err.message : 'Failed to process file.'
-      setError(message)
+      const msg = err instanceof Error && err.message.includes('RATE_LIMIT')
+        ? 'You\'ve reached your source import limit for this month.'
+        : 'Failed to process file. Please try again.'
+      setError(msg)
     } finally {
       setIsUploading(false)
     }
