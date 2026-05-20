@@ -163,11 +163,14 @@ export default function DashboardHome() {
               drafts={linkedinDrafts.length} loading={loading}
             />
             <div style={{ height: 8 }} />
-            <AgentCard
-              name="The Catalyst" platform="X/Twitter · E-TW-119"
-              avatarBg="rgba(29,158,117,0.15)" avatarColor="var(--success)"
-              drafts={xDrafts.length} loading={loading}
-            />
+            <div style={{ opacity: 0.5 }}>
+              <AgentCard
+                name="The Catalyst"
+                platform="X/Twitter · E-TW-119 · Coming soon"
+                avatarBg="rgba(29,158,117,0.15)" avatarColor="var(--success)"
+                drafts={xDrafts.length} loading={loading}
+              />
+            </div>
           </div>
 
           {/* Recent activity */}

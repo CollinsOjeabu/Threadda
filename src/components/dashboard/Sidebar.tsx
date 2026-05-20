@@ -376,22 +376,6 @@ export function Sidebar({
           display: 'flex', gap: 2, padding: '6px 10px 10px',
           borderBottom: '0.5px solid var(--border)',
         }}>
-          {/* New Synthesis */}
-          <button
-            onClick={() => router.push('/dashboard/canvas')}
-            title="New Synthesis"
-            className="util-btn"
-            style={{
-              width: 30, height: 28, borderRadius: 5,
-              background: 'transparent', border: 'none',
-              color: 'var(--ember)', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}
-          >
-            <svg width="13" height="13" fill="none" viewBox="0 0 14 14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-              <line x1="7" y1="2" x2="7" y2="12"/><line x1="2" y1="7" x2="12" y2="7"/>
-            </svg>
-          </button>
           {/* Search */}
           <button
             onClick={openSearch}
@@ -406,22 +390,6 @@ export function Sidebar({
           >
             <svg width="13" height="13" fill="none" viewBox="0 0 14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
               <circle cx="6" cy="6" r="4"/><line x1="9" y1="9" x2="13" y2="13"/>
-            </svg>
-          </button>
-          {/* Add to Library */}
-          <button
-            onClick={() => router.push('/dashboard/library/new')}
-            title="Add to Library"
-            className="util-btn"
-            style={{
-              width: 30, height: 28, borderRadius: 5,
-              background: 'transparent', border: 'none',
-              color: 'var(--text-muted)', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}
-          >
-            <svg width="13" height="13" fill="none" viewBox="0 0 14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-              <rect x="2" y="1" width="10" height="12" rx="1.5"/><line x1="5" y1="5" x2="9" y2="5"/><line x1="5" y1="8" x2="7.5" y2="8"/>
             </svg>
           </button>
         </div>

@@ -254,26 +254,37 @@ export default function OnboardingPage() {
               ) : <div style={{ fontSize: 9, color: 'var(--text-muted)', fontStyle: 'italic' }}>Voice DNA not yet trained</div>}
             </div>
 
-            {/* Catalyst */}
-            <div style={{ background: 'rgba(29,158,117,0.08)', border: '0.5px solid rgba(29,158,117,0.3)', borderRadius: 10, padding: 16 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                <div style={{ width: 28, height: 28, borderRadius: 7, background: '#1D9E75', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg width="12" height="12" fill="none" viewBox="0 0 14 14" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"><path d="M1 7.5c1.5-3 3-5 4.5-5s2 3 3.5 3 2-2.5 3.5-2.5"/></svg>
+            {/* Catalyst — locked */}
+            <div style={{ position: 'relative', opacity: 0.5, pointerEvents: 'none' }}>
+              <div style={{ background: 'rgba(29,158,117,0.08)', border: '0.5px solid rgba(29,158,117,0.3)', borderRadius: 10, padding: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                  <div style={{ width: 28, height: 28, borderRadius: 7, background: '#1D9E75', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg width="12" height="12" fill="none" viewBox="0 0 14 14" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"><path d="M1 7.5c1.5-3 3-5 4.5-5s2 3 3.5 3 2-2.5 3.5-2.5"/></svg>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>The Catalyst</div>
+                    <span style={{ fontSize: 8, fontFamily: "'JetBrains Mono', monospace", color: 'var(--text-muted)', background: 'var(--bg-elevated)', padding: '1px 5px', borderRadius: 3 }}>E-TW-119</span>
+                  </div>
                 </div>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>The Catalyst</div>
-                  <span style={{ fontSize: 8, fontFamily: "'JetBrains Mono', monospace", color: 'var(--text-muted)', background: 'var(--bg-elevated)', padding: '1px 5px', borderRadius: 3 }}>E-TW-119</span>
-                </div>
+                <span style={{ display: 'inline-block', fontSize: 9, padding: '2px 7px', borderRadius: 4, background: 'var(--bg-elevated)', color: 'var(--text-muted)', marginBottom: 8 }}>X / Twitter</span>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.55, marginBottom: 10 }}>Writes punchy X threads. Sharp takes, strong opinions, built for retweets and replies.</div>
+                {!skippedVoiceDna && realVoiceProfile ? (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                    {barTraits.filter(t => voicePreview[t.key] > 40).slice(0, 3).map(t => (
+                      <span key={t.key} style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(29,158,117,0.1)', color: '#1D9E75' }}>{voicePreview[t.key]}% {t.label.toLowerCase()}</span>
+                    ))}
+                  </div>
+                ) : <div style={{ fontSize: 9, color: 'var(--text-muted)', fontStyle: 'italic' }}>Voice DNA not yet trained</div>}
               </div>
-              <span style={{ display: 'inline-block', fontSize: 9, padding: '2px 7px', borderRadius: 4, background: 'var(--bg-elevated)', color: 'var(--text-muted)', marginBottom: 8 }}>X / Twitter</span>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.55, marginBottom: 10 }}>Writes punchy X threads. Sharp takes, strong opinions, built for retweets and replies.</div>
-              {!skippedVoiceDna && realVoiceProfile ? (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                  {barTraits.filter(t => voicePreview[t.key] > 40).slice(0, 3).map(t => (
-                    <span key={t.key} style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(29,158,117,0.1)', color: '#1D9E75' }}>{voicePreview[t.key]}% {t.label.toLowerCase()}</span>
-                  ))}
-                </div>
-              ) : <div style={{ fontSize: 9, color: 'var(--text-muted)', fontStyle: 'italic' }}>Voice DNA not yet trained</div>}
+              <div style={{
+                position: 'absolute', inset: 0, borderRadius: 10,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'rgba(0,0,0,0.4)', fontSize: 10,
+                color: 'var(--text-muted)', letterSpacing: '0.08em',
+                fontFamily: "'JetBrains Mono', monospace",
+              }}>
+                COMING SOON
+              </div>
             </div>
           </div>
 

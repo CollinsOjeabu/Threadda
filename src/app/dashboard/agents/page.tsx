@@ -90,6 +90,7 @@ export default function AgentsPage() {
   const removePost = useMutation(api.posts.remove)
   const regenerateAction = useAction(api.generation.regeneratePost)
 
+  const [activeTab, setActiveTab] = useState<AgentKey>('authority')
   const [schedulingPostId, setSchedulingPostId] = useState<string | null>(null)
   const [scheduleDate, setScheduleDate] = useState('')
   const [feedbackPostId, setFeedbackPostId] = useState<string | null>(null)
@@ -180,14 +181,58 @@ export default function AgentsPage() {
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-        {(Object.entries(AGENTS) as [AgentKey, typeof AGENTS.authority][]).map(([agentKey, agent]) => {
+      {/* Tab switcher */}
+      <div style={{ display: 'flex', gap: 0, borderBottom: '0.5px solid var(--border)', marginBottom: 20 }}>
+        {[
+          { key: 'authority' as AgentKey, label: 'The Authority', sub: 'LinkedIn' },
+          { key: 'catalyst' as AgentKey, label: 'The Catalyst', sub: 'X / Twitter' },
+        ].map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            style={{
+              padding: '10px 20px',
+              background: 'none',
+              border: 'none',
+              borderBottom: activeTab === tab.key ? '2px solid var(--ember)' : '2px solid transparent',
+              color: activeTab === tab.key ? 'var(--ember)' : 'var(--text-muted)',
+              fontSize: 13,
+              fontWeight: activeTab === tab.key ? 500 : 400,
+              cursor: 'pointer',
+              marginBottom: -1,
+              fontFamily: "'Inter', sans-serif",
+            }}
+          >
+            {tab.label}
+            <span style={{ fontSize: 10, marginLeft: 6, opacity: 0.6 }}>{tab.sub}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Coming soon banner for Catalyst */}
+      {activeTab === 'catalyst' && (
+        <div style={{
+          padding: '12px 16px', marginBottom: 16,
+          background: 'var(--ember-muted)',
+          border: '0.5px solid var(--ember)',
+          borderRadius: 8, fontSize: 12,
+          color: 'var(--ember)',
+        }}>
+          The Catalyst (X/Twitter) is coming in V2. The Authority is your active agent for now.
+        </div>
+      )}
+
+      {/* Active agent content — full width */}
+      <div>
+        {(() => {
+          const agentKey = activeTab
+          const agent = AGENTS[agentKey]
           const posts = postsByAgent(agentKey)
           const drafts = draftsByAgent(agentKey)
           const total = totalByAgent(agentKey)
 
           return (
-            <div key={agentKey} style={{
+            <div style={{
               background: 'var(--bg-surface)',
               border: `0.5px solid ${agent.borderColor}`,
               borderRadius: 13, padding: 20,
@@ -532,7 +577,7 @@ export default function AgentsPage() {
               )}
             </div>
           )
-        })}
+        })()}
       </div>
 
       <style jsx>{`

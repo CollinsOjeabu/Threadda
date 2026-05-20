@@ -118,15 +118,26 @@ export function RightPanel({
             onClick={() => onAgentChange('authority')}
           />
 
-          {/* Catalyst card */}
-          <AgentCard
-            name="The Catalyst"
-            code="E-TW-119"
-            platform="X / Twitter"
-            description="Punchy, viral-ready takes. Sparks debate and grows your audience fast."
-            isSelected={activeAgent === 'catalyst'}
-            onClick={() => onAgentChange('catalyst')}
-          />
+          {/* Catalyst card — locked */}
+          <div style={{ position: 'relative', opacity: 0.5, pointerEvents: 'none' }}>
+            <AgentCard
+              name="The Catalyst"
+              code="E-TW-119"
+              platform="X / Twitter"
+              description="Punchy, viral-ready takes. Sparks debate and grows your audience fast."
+              isSelected={activeAgent === 'catalyst'}
+              onClick={() => onAgentChange('catalyst')}
+            />
+            <div style={{
+              position: 'absolute', inset: 0, borderRadius: 8,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(0,0,0,0.4)', fontSize: 10,
+              color: 'var(--text-muted)', letterSpacing: '0.08em',
+              fontFamily: "'JetBrains Mono', monospace",
+            }}>
+              COMING SOON
+            </div>
+          </div>
 
           {/* Hint */}
           <div style={{
