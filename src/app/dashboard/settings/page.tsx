@@ -38,11 +38,6 @@ function SettingsIcon({ name }: { name: string }) {
 }
 
 /* ─── Plan data ─── */
-const PLANS = [
-  { id: 'free' as const, name: 'Scout', price: '$0', period: '/forever', features: ['5 library items', '1 agent', 'Basic voice profile'] },
-  { id: 'pro' as const, name: 'Authority', price: '$29', period: '/month', features: ['Unlimited library', '2 agents', 'Advanced Voice DNA', 'Scheduling', 'Analytics'] },
-  { id: 'team' as const, name: 'Collective', price: '$79', period: '/month', features: ['Everything in Authority', '5 team members', 'Shared library', 'Team analytics', 'Priority support'] },
-]
 
 /* ─── Theme data ─── */
 const THEMES = [
@@ -142,7 +137,7 @@ export default function SettingsPage() {
   const displayName = profile?.name ?? ''
   const initial = displayName.charAt(0).toUpperCase() || '?'
   const email = profile?.email ?? ''
-  const plan = profile?.plan ?? 'free'
+
 
   return (
     <TooltipProvider>
@@ -518,50 +513,23 @@ export default function SettingsPage() {
                       <div>
                         <div className="text-[11px] text-[var(--text-faint)] uppercase tracking-wider mb-1" style={{ fontFamily: "'JetBrains Mono', monospace" }}>Current plan</div>
                         <div className="text-lg font-semibold text-[var(--text-primary)]" style={{ fontFamily: "'DM Serif Display', serif" }}>
-                          {plan === 'free' ? 'Scout' : plan === 'pro' ? 'Authority' : 'Collective'}
+                          Free Beta
                           <span className="font-normal text-sm text-[var(--text-muted)] ml-2">
-                            {plan === 'free' ? 'Free forever' : plan === 'pro' ? '$29/month' : '$79/month'}
+                            $0 during beta
                           </span>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
 
-                  {/* Plan comparison */}
-                  <div className="grid grid-cols-3 gap-3">
-                    {PLANS.map((p) => {
-                      const isCurrent = plan === p.id
-                      return (
-                        <Card key={p.id} className={`relative ${isCurrent ? 'border-[var(--ember)]' : ''}`}>
-                          <CardContent className="p-4.5">
-                            {isCurrent && (
-                              <Badge className="absolute top-2.5 right-2.5 text-[8px]">Current</Badge>
-                            )}
-                            <div className="text-[15px] font-semibold text-[var(--text-primary)] mb-1" style={{ fontFamily: "'DM Serif Display', serif" }}>{p.name}</div>
-                            <div className="text-2xl font-bold mb-0.5" style={{ fontFamily: "'DM Serif Display', serif", color: isCurrent ? 'var(--ember)' : 'var(--text-primary)' }}>
-                              {p.price}<span className="text-xs font-normal text-[var(--text-muted)]">{p.period}</span>
-                            </div>
-                            <hr className="border-t border-[var(--border)] my-3" />
-                            <ul className="list-none p-0 m-0">
-                              {p.features.map((f, i) => (
-                                <li key={i} className="text-xs text-[var(--text-muted)] py-0.5 flex items-center gap-1.5">
-                                  <span style={{ color: isCurrent ? 'var(--ember)' : '#1D9E75', fontSize: 10 }}>✓</span>
-                                  {f}
-                                </li>
-                              ))}
-                            </ul>
-                            {!isCurrent && (
-                              <Button variant="outline" size="sm" disabled className="w-full mt-3.5">
-                                {p.id === 'free' ? 'Downgrade' : 'Upgrade →'}
-                              </Button>
-                            )}
-                          </CardContent>
-                        </Card>
-                      )
-                    })}
+                  <div style={{ textAlign: 'center', padding: '40px 24px' }}>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 8 }}>
+                      You're on the Free Beta plan
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: 260, margin: '0 auto' }}>
+                      Billing and plan management will be available at launch. Enjoy full access during beta.
+                    </div>
                   </div>
-
-                  <div className="text-[13px] italic mt-4" style={{ color: 'var(--cream-muted, var(--text-faint))' }}>Billing management will be available when Stripe is connected.</div>
                 </div>
               )}
 

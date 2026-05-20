@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useMutation, useAction } from 'convex/react'
 import { api } from '../../../../../convex/_generated/api'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 
-type ActiveTab = 'url' | 'note'
+type ActiveTab = 'url' | 'note' | 'upload'
 
 const PIPELINE_STEPS = [
   { label: 'Fetching article…', detail: 'Firecrawl is scraping the page' },
@@ -33,6 +33,11 @@ export default function NewContentPage() {
   // Note tab
   const [noteTitle, setNoteTitle] = useState('')
   const [noteContent, setNoteContent] = useState('')
+
+  // Upload tab
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
 
   const isValidUrl = (u: string) => /^https?:\/\/.+/.test(u)
 
@@ -104,6 +109,43 @@ export default function NewContentPage() {
     }
   }, [noteTitle, noteContent, createItem, router])
 
+  /* ─── File upload handlers ─── */
+  const handleFileSelect = (file: File) => {
+    if (file.size > 10 * 1024 * 1024) {
+      setError('File must be under 10MB')
+      return
+    }
+    setSelectedFile(file)
+    setError('')
+  }
+
+  const handleFileDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    const file = e.dataTransfer.files[0]
+    if (file) handleFileSelect(file)
+  }
+
+  const handleFileUpload = async () => {
+    if (!selectedFile) return
+    setIsUploading(true)
+    setError('')
+    try {
+      const text = await selectedFile.text()
+      const title = selectedFile.name.replace(/\.[^/.]+$/, '')
+      await createItem({
+        type: selectedFile.name.endsWith('.pdf') ? 'pdf' as const : 'note' as const,
+        title,
+        content: text,
+      })
+      router.push('/dashboard/library')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to process file.'
+      setError(message)
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
   return (
     <div style={{ maxWidth: 620, margin: '0 auto', animation: 'fadeIn 0.18s ease' }}>
       {/* Back link */}
@@ -121,7 +163,7 @@ export default function NewContentPage() {
 
       {/* Tab switcher */}
       <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid var(--border)', marginBottom: 20 }}>
-        {(['url', 'note'] as ActiveTab[]).map((tab) => (
+        {(['url', 'note', 'upload'] as ActiveTab[]).map((tab) => (
           <button
             key={tab}
             onClick={() => { setActiveTab(tab); setError(''); setPipelineStep(-1) }}
@@ -134,7 +176,7 @@ export default function NewContentPage() {
               transition: 'all 0.14s',
             }}
           >
-            {tab === 'url' ? 'URL' : 'Manual Note'}
+            {tab === 'url' ? 'URL' : tab === 'note' ? 'Manual Note' : 'Upload'}
           </button>
         ))}
       </div>
@@ -329,6 +371,84 @@ export default function NewContentPage() {
             >
               {isSubmitting ? 'Saving…' : 'Save Note'}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Upload Tab */}
+      {activeTab === 'upload' && (
+        <div style={{ background: 'var(--bg-surface)', border: '0.5px solid var(--border)', borderRadius: 12, padding: 24 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={handleFileDrop}
+              style={{
+                border: '1px dashed var(--border)',
+                borderRadius: 8,
+                padding: '40px 24px',
+                textAlign: 'center',
+                cursor: 'pointer',
+                background: 'var(--bg-elevated)',
+                transition: 'border-color 0.14s',
+              }}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <div style={{ fontSize: 24, marginBottom: 8 }}>📄</div>
+              <div style={{ fontSize: 13, color: 'var(--text-primary)', marginBottom: 4 }}>
+                Drop a file or click to browse
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                PDF, TXT, or MD — max 10MB
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.txt,.md"
+                style={{ display: 'none' }}
+                onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
+              />
+            </div>
+
+            {selectedFile && (
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px',
+                background: 'var(--bg-surface)', border: '0.5px solid var(--border)', borderRadius: 8,
+              }}>
+                <span style={{ fontSize: 12, color: 'var(--text-primary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selectedFile.name}</span>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0 }}>
+                  {(selectedFile.size / 1024).toFixed(0)} KB
+                </span>
+                <button onClick={() => setSelectedFile(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 14, flexShrink: 0 }}>×</button>
+              </div>
+            )}
+
+            {/* Error */}
+            {error && (
+              <div style={{
+                padding: '8px 12px', borderRadius: 8,
+                background: 'rgba(226,75,74,0.08)', border: '0.5px solid rgba(226,75,74,0.2)',
+                fontSize: 12, color: '#E24B4A',
+              }}>
+                {error}
+              </div>
+            )}
+
+            {selectedFile && (
+              <button
+                onClick={handleFileUpload}
+                disabled={isUploading}
+                style={{
+                  width: '100%', padding: '11px 0', borderRadius: 8,
+                  border: 'none', cursor: isUploading ? 'wait' : 'pointer',
+                  background: isUploading ? 'rgba(255,107,53,0.6)' : 'var(--ember)',
+                  color: '#fff', fontSize: 13, fontWeight: 600,
+                  fontFamily: "'Inter', sans-serif",
+                  transition: 'all 0.15s',
+                }}
+              >
+                {isUploading ? 'Processing…' : 'Add to Library →'}
+              </button>
+            )}
           </div>
         </div>
       )}

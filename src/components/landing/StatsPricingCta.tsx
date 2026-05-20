@@ -37,42 +37,29 @@ export function Stats() {
 
 const plans = [
   {
-    tier:"Scout", price:"0", period:"free forever", cta:"Get started →", ctaStyle:"outline", featured:false,
+    tier:"Free", label:"Free during beta", price:"0", period:"while in beta", cta:"Join the waitlist →", ctaStyle:"outline", featured:false,
+    mailto:"mailto:hello@threadda.com?subject=Threadda Beta Access",
     features:[
-      {ok:true,t:"Save up to 30 items to library"},
-      {ok:true,t:"Synthesis canvas — 3 canvases/mo"},
-      {ok:true,t:"Knowledge graph (read-only)"},
-      {ok:true,t:"Voice DNA profile — 1 platform"},
-      {ok:true,t:"5 generated posts per month"},
-      {ok:false,t:"Content calendar & scheduling"},
-      {ok:false,t:"Analytics & source tracking"},
-      {ok:false,t:"Future content ideas"},
+      {ok:true,t:"Save up to 20 sources"},
+      {ok:true,t:"3 canvas sessions/month"},
+      {ok:true,t:"Voice DNA (LinkedIn)"},
+      {ok:true,t:"5 posts/month"},
+      {ok:true,t:"Knowledge graph"},
+      {ok:false,t:"Scheduling"},
+      {ok:false,t:"Analytics"},
     ],
   },
   {
-    tier:"Authority", price:"29", period:"per month", cta:"Get the Authority →", ctaStyle:"solid", featured:true,
+    tier:"Pro", label:"Launching soon", price:"29", period:"per month", cta:"Get notified →", ctaStyle:"solid", featured:true,
+    mailto:"mailto:hello@threadda.com?subject=Threadda Pro Waitlist",
     features:[
-      {ok:true,t:"Unlimited library saves"},
-      {ok:true,t:"Synthesis canvas — unlimited"},
-      {ok:true,t:"Full knowledge graph + connections"},
-      {ok:true,t:"Voice DNA — LinkedIn + X"},
-      {ok:true,t:"The Authority agent — 20 posts/mo"},
-      {ok:true,t:"Content calendar & scheduling"},
-      {ok:true,t:"Source analytics dashboard"},
-      {ok:true,t:"Future content ideas (in your voice)"},
-      {ok:true,t:"Source citations on every post"},
-    ],
-  },
-  {
-    tier:"Amplified", price:"49", period:"per month", cta:"Get Amplified →", ctaStyle:"outline", featured:false,
-    features:[
-      {ok:true,t:"Everything in Authority"},
-      {ok:true,t:"The Catalyst — X/Twitter agent"},
-      {ok:true,t:"Unlimited posts — both platforms"},
-      {ok:true,t:"Research discovery mode"},
-      {ok:true,t:"Advanced analytics + learning loop"},
-      {ok:true,t:"Tone guardrails slider"},
-      {ok:true,t:"Autonomous publishing mode"},
+      {ok:true,t:"Everything in Free"},
+      {ok:true,t:"Unlimited sources"},
+      {ok:true,t:"Unlimited canvas sessions"},
+      {ok:true,t:"Unlimited posts"},
+      {ok:true,t:"Scheduling + calendar"},
+      {ok:true,t:"Analytics"},
+      {ok:true,t:"The Catalyst (X/Twitter) — V2"},
       {ok:true,t:"Priority support"},
     ],
   },
@@ -81,14 +68,14 @@ const plans = [
 export function Pricing() {
   return (
     <section id="pricing" style={{padding:"140px 24px",background:C.surface}}>
-      <div style={{maxWidth:1100,margin:"0 auto"}}>
+      <div style={{maxWidth:900,margin:"0 auto"}}>
         <Reveal style={{textAlign:"center",marginBottom:60}}>
           <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"rgba(237,232,224,0.18)",marginBottom:12}}>(07) — Choose your plan</div>
           <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(34px,5vw,50px)",fontWeight:400,letterSpacing:"-0.025em",marginBottom:12,color:C.cream}}>Simple, honest pricing.</h2>
           <p style={{fontSize:16,color:C.creamMuted}}>Start free. Upgrade when your synthesis proves its worth.</p>
         </Reveal>
         <Reveal>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1.4fr 1fr",gap:12,alignItems:"start"}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1.4fr",gap:12,alignItems:"start",maxWidth:720,margin:"0 auto"}}>
             {plans.map(p => (
               <div key={p.tier} style={{
                 background: p.featured?"#152219":C.void,
@@ -104,12 +91,12 @@ export function Pricing() {
                   <span style={{fontSize:22,verticalAlign:"top",marginTop:9,display:"inline-block"}}>$</span>{p.price}
                 </div>
                 <div style={{fontSize:12,color:C.creamMuted,marginBottom:22}}>{p.period}</div>
-                <button style={{
-                  width:"100%",padding:11,borderRadius:100,fontSize:13,fontWeight:600,cursor:"pointer",marginBottom:22,border:"none",
+                <a href={p.mailto} style={{
+                  display:"block",width:"100%",padding:11,borderRadius:100,fontSize:13,fontWeight:600,cursor:"pointer",marginBottom:22,border:"none",textAlign:"center",textDecoration:"none",
                   background: p.ctaStyle==="solid"?C.ember:"transparent",
                   color: p.ctaStyle==="solid"?"#fff":C.cream,
                   outline: p.ctaStyle==="outline"?`1px solid ${C.border}`:"none",
-                }}>{p.cta}</button>
+                }}>{p.cta}</a>
                 <hr style={{border:"none",borderTop:`0.5px solid ${C.border}`,marginBottom:18}}/>
                 <ul style={{listStyle:"none",display:"flex",flexDirection:"column",gap:9}}>
                   {p.features.map(f => (
@@ -122,7 +109,7 @@ export function Pricing() {
               </div>
             ))}
           </div>
-          <p style={{textAlign:"center",marginTop:24,fontSize:12,color:"rgba(237,232,224,0.2)"}}>14-day free trial on all plans. No credit card required.</p>
+          <p style={{textAlign:"center",marginTop:24,fontSize:12,color:"rgba(237,232,224,0.2)"}}>Free during beta. No credit card required.</p>
         </Reveal>
       </div>
     </section>
