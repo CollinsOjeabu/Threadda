@@ -45,6 +45,12 @@ export const getByClerkId = query({
       voiceDnaAnalysesThisMonth: v.optional(v.number()),
       periodResetAt: v.optional(v.number()),
       theme: v.optional(v.union(v.literal("void"), v.literal("dark"), v.literal("light"))),
+      preferences: v.optional(v.object({
+        auto: v.optional(v.boolean()),
+        daily: v.optional(v.boolean()),
+        weekly: v.optional(v.boolean()),
+        discovery: v.optional(v.boolean()),
+      })),
     }),
     v.null(),
   ),
@@ -293,6 +299,41 @@ export const updateProfile = mutation({
       ...(args.name !== undefined && { name: args.name }),
       ...(args.linkedInUrl !== undefined && { linkedInUrl: args.linkedInUrl }),
       ...(args.twitterHandle !== undefined && { twitterHandle: args.twitterHandle }),
+    })
+    return null
+  },
+})
+
+/**
+ * Update user preferences toggles.
+ * Called from the Settings page.
+ */
+export const updatePreferences = mutation({
+  args: {
+    auto: v.optional(v.boolean()),
+    daily: v.optional(v.boolean()),
+    weekly: v.optional(v.boolean()),
+    discovery: v.optional(v.boolean()),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new ConvexError("Not authenticated")
+
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .unique()
+    if (!profile) throw new ConvexError("Profile not found")
+
+    const current = profile.preferences ?? {}
+    await ctx.db.patch(profile._id, {
+      preferences: {
+        auto: args.auto ?? current.auto ?? false,
+        daily: args.daily ?? current.daily ?? true,
+        weekly: args.weekly ?? current.weekly ?? true,
+        discovery: args.discovery ?? current.discovery ?? false,
+      },
     })
     return null
   },

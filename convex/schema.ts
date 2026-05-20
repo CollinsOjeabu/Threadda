@@ -39,6 +39,13 @@ export default defineSchema({
     periodResetAt: v.optional(v.number()),
     // ─── Theme preference (Sprint 3) ───
     theme: v.optional(v.union(v.literal("void"), v.literal("dark"), v.literal("light"))),
+    // ─── User preferences (Sprint 7.5) ───
+    preferences: v.optional(v.object({
+      auto: v.optional(v.boolean()),
+      daily: v.optional(v.boolean()),
+      weekly: v.optional(v.boolean()),
+      discovery: v.optional(v.boolean()),
+    })),
   })
     .index("by_clerk_id", ["clerkId"])
     .index("by_email", ["email"]),

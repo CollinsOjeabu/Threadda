@@ -18,7 +18,6 @@ import Link from 'next/link'
 const SETTINGS_TABS = [
   { id: 'profile', label: 'Profile', icon: 'user' },
   { id: 'voicedna', label: 'Voice DNA', icon: 'target' },
-  { id: 'agents', label: 'Agents', icon: 'wave' },
   { id: 'integrations', label: 'Integrations', icon: 'plug' },
   { id: 'appearance', label: 'Appearance', icon: 'sun' },
   { id: 'billing', label: 'Billing', icon: 'billing' },
@@ -124,9 +123,17 @@ export default function SettingsPage() {
     }
   }
 
-  /* ─── Preference toggles (local only) ─── */
-  const [toggles, setToggles] = useState({ auto: false, daily: true, weekly: true, discovery: false })
-  const toggle = (key: keyof typeof toggles) => setToggles(p => ({ ...p, [key]: !p[key] }))
+  /* ─── Preference toggles (persisted to Convex) ─── */
+  const updatePreferences = useMutation(api.users.updatePreferences)
+  const toggles = {
+    auto: (profile as any)?.preferences?.auto ?? false,
+    daily: (profile as any)?.preferences?.daily ?? true,
+    weekly: (profile as any)?.preferences?.weekly ?? true,
+    discovery: (profile as any)?.preferences?.discovery ?? false,
+  }
+  const toggle = (key: 'auto' | 'daily' | 'weekly' | 'discovery') => {
+    updatePreferences({ [key]: !toggles[key] })
+  }
 
   /* ─── Theme state (from ThemeProvider + Convex) ─── */
   const { theme, setTheme: handleTheme } = useTheme()
@@ -206,7 +213,15 @@ export default function SettingsPage() {
                       {/* User card */}
                       <Card className="mb-5">
                         <CardContent className="p-3.5 flex items-center gap-3.5">
-                          <div className="w-13 h-13 rounded-full flex items-center justify-center shrink-0 text-white text-xl italic" style={{ background: 'var(--ember)', fontFamily: "'DM Serif Display', serif" }}>{initial}</div>
+                          {profile?.avatarUrl ? (
+                            <img
+                              src={profile.avatarUrl}
+                              alt={displayName || 'Profile photo'}
+                              style={{ width: 52, height: 52, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                            />
+                          ) : (
+                            <div className="w-13 h-13 rounded-full flex items-center justify-center shrink-0 text-white text-xl italic" style={{ background: 'var(--ember)', fontFamily: "'DM Serif Display', serif", width: 52, height: 52 }}>{initial}</div>
+                          )}
                           <div>
                             <div className="text-sm font-semibold text-[var(--text-primary)]">{displayName || 'Unnamed'}</div>
                             <div className="text-xs text-[var(--text-muted)]">{email}</div>
@@ -256,7 +271,7 @@ export default function SettingsPage() {
                         </div>
                       ))}
 
-                      <div className="text-xs italic mt-2.5" style={{ color: 'var(--cream-muted, var(--text-faint))' }}>Preference settings will be available soon.</div>
+
 
                       <hr className="border-t border-[var(--border)] my-4" />
 
@@ -435,42 +450,6 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              {/* ═══ AGENTS ═══ */}
-              {activeTab === 'agents' && (
-                <div>
-                  <div className="text-sm font-semibold text-[var(--text-primary)] mb-0.5">Agent Configuration</div>
-                  <div className="text-xs text-[var(--text-muted)] mb-5">Configure how The Authority and The Catalyst behave.</div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    {[
-                      { name: 'The Authority', platform: 'LinkedIn', code: 'E-LI-772', color: '#FF6B35', bg: 'var(--ember-muted)' },
-                      { name: 'The Catalyst', platform: 'X/Twitter', code: 'E-X-441', color: '#378ADD', bg: 'rgba(55,138,221,0.1)' },
-                    ].map((agent) => (
-                      <Card key={agent.name}>
-                        <CardContent className="p-4">
-                          <div className="flex items-center gap-2.5 mb-3">
-                            <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: agent.bg }}>
-                              <svg width="16" height="16" fill="none" viewBox="0 0 16 16" stroke={agent.color} strokeWidth="1.5" strokeLinecap="round">
-                                <path d="M2 14 C2 9 5 3 12 2" /><path d="M6 14 C6 10 8.5 6 12 5" />
-                              </svg>
-                            </div>
-                            <div>
-                              <div className="text-sm font-semibold text-[var(--text-primary)]">{agent.name}</div>
-                              <div className="text-[11px] text-[var(--text-muted)]">{agent.platform} · {agent.code}</div>
-                            </div>
-                          </div>
-                          <Badge variant="outline" className="text-[10px] gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[var(--text-faint)]" />
-                            Waiting for configuration
-                          </Badge>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-
-                  <div className="text-xs italic mt-4" style={{ color: 'var(--cream-muted, var(--text-faint))' }}>Agent configuration settings will be available soon.</div>
-                </div>
-              )}
 
               {/* ═══ INTEGRATIONS ═══ */}
               {activeTab === 'integrations' && (
@@ -478,30 +457,14 @@ export default function SettingsPage() {
                   <div className="text-sm font-semibold text-[var(--text-primary)] mb-0.5">Connected Platforms</div>
                   <div className="text-xs text-[var(--text-muted)] mb-5">Platform connections enable direct publishing and Voice DNA training.</div>
 
-                  <div className="flex flex-col gap-2.5">
-                    {[
-                      { name: 'LinkedIn', icon: '🔗', phase: 'Phase E' },
-                      { name: 'X/Twitter', icon: '𝕏', phase: 'Phase G' },
-                    ].map((platform) => (
-                      <Card key={platform.name}>
-                        <CardContent className="p-3.5 flex items-center gap-3.5">
-                          <div className="w-10 h-10 rounded-lg flex items-center justify-center text-lg shrink-0" style={{ background: 'var(--bg-surface)' }}>{platform.icon}</div>
-                          <div className="flex-1">
-                            <div className="text-sm font-semibold text-[var(--text-primary)]">{platform.name}</div>
-                            <div className="text-xs text-[var(--text-faint)] flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-[var(--text-faint)]" />
-                              Not connected
-                            </div>
-                          </div>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span><Button variant="outline" size="sm" disabled>Connect {platform.name} →</Button></span>
-                            </TooltipTrigger>
-                            <TooltipContent>Available in {platform.phase}</TooltipContent>
-                          </Tooltip>
-                        </CardContent>
-                      </Card>
-                    ))}
+                  <div style={{ textAlign: 'center', padding: '48px 24px' }}>
+                    <div style={{ fontSize: 32, marginBottom: 12 }}>🔌</div>
+                    <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 8 }}>
+                      Integrations coming soon
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)', maxWidth: 280, margin: '0 auto', lineHeight: 1.6 }}>
+                      Connect Notion, Substack, and other platforms to bring your research directly into Threadda. Available in V1.
+                    </div>
                   </div>
                 </div>
               )}

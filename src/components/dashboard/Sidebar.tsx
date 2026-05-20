@@ -289,6 +289,12 @@ export function Sidebar({
             {/* Avatar */}
             {isLoading ? (
               <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--bg-elevated)', animation: 'pulse 1.5s ease-in-out infinite' }} />
+            ) : profile?.avatarUrl ? (
+              <img
+                src={profile.avatarUrl}
+                alt={displayName || 'Profile'}
+                style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+              />
             ) : (
               <div style={{
                 width: 28, height: 28, borderRadius: '50%',
@@ -477,6 +483,12 @@ export function Sidebar({
           {/* Avatar */}
           {isLoading ? (
             <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'var(--bg-elevated)', flexShrink: 0, animation: 'pulse 1.5s ease-in-out infinite' }} />
+          ) : profile?.avatarUrl ? (
+            <img
+              src={profile.avatarUrl}
+              alt={displayName || 'Profile'}
+              style={{ width: 26, height: 26, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+            />
           ) : (
             <div style={{
               width: 26, height: 26, borderRadius: '50%',
