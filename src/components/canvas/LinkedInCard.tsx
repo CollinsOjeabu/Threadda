@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useEffect } from 'react'
 
 interface LinkedInCardProps {
   post: string
@@ -17,6 +17,13 @@ export function LinkedInCard({ post, onPostChange, profileName, sourceTitles }: 
 
   const initial = profileName?.charAt(0)?.toUpperCase() ?? 'U'
   const charCount = post.length
+
+  /* Sync post text into contentEditable ref without React reconciliation */
+  useEffect(() => {
+    if (bodyRef.current && bodyRef.current.innerText !== post) {
+      bodyRef.current.innerText = post
+    }
+  }, [post])
 
   return (
     <div style={{
@@ -42,24 +49,20 @@ export function LinkedInCard({ post, onPostChange, profileName, sourceTitles }: 
           <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-primary)' }}>
             {profileName}
           </div>
-          <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
             Founder · Threadda · 1st+
           </div>
         </div>
       </div>
 
-      {/* Body — contentEditable */}
+      {/* Body — contentEditable (ref-managed to avoid React DOM crashes) */}
       <div
         ref={bodyRef}
         contentEditable
         suppressContentEditableWarning
-        onBlur={() => {
-          if (bodyRef.current) {
-            onPostChange(bodyRef.current.innerText)
-          }
-        }}
+        onInput={(e) => onPostChange((e.target as HTMLDivElement).innerText)}
         style={{
-          fontSize: 11.5,
+          fontSize: 14,
           color: 'var(--text-primary)',
           lineHeight: 1.75,
           whiteSpace: 'pre-line',
@@ -67,14 +70,9 @@ export function LinkedInCard({ post, onPostChange, profileName, sourceTitles }: 
           minHeight: 80,
           marginBottom: 8,
         }}
-      >
-        {post}
-      </div>
+      />
 
-      {/* See more */}
-      <div style={{ fontSize: 10.5, color: 'var(--info)', marginBottom: 10, cursor: 'pointer' }}>
-        …see more
-      </div>
+
 
       {/* Source pills */}
       {sourceTitles.length > 0 && (
@@ -88,7 +86,7 @@ export function LinkedInCard({ post, onPostChange, profileName, sourceTitles }: 
               key={title}
               className="font-mono"
               style={{
-                fontSize: 8.5, color: 'var(--text-muted)',
+                fontSize: 11, color: 'var(--text-muted)',
                 background: 'var(--bg-page)',
                 padding: '3px 8px', borderRadius: 4,
               }}
@@ -100,7 +98,7 @@ export function LinkedInCard({ post, onPostChange, profileName, sourceTitles }: 
       )}
 
       {/* Char count */}
-      <div className="font-mono" style={{ fontSize: 8.5, color: 'var(--text-faint)', marginBottom: 8 }}>
+      <div className="font-mono" style={{ fontSize: 11, color: 'var(--text-faint)', marginBottom: 8 }}>
         {charCount} / 3000 characters
       </div>
 
@@ -111,7 +109,7 @@ export function LinkedInCard({ post, onPostChange, profileName, sourceTitles }: 
         display: 'flex', gap: 20,
       }}>
         {['👍 Like', '💬 Comment', '🔄 Repost', '📤 Send'].map((action) => (
-          <span key={action} style={{ fontSize: 9.5, color: 'var(--text-muted)', cursor: 'default' }}>
+          <span key={action} style={{ fontSize: 11, color: 'var(--text-muted)', cursor: 'default' }}>
             {action}
           </span>
         ))}

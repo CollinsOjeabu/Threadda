@@ -141,5 +141,6 @@ export default defineSchema({
   })
     .index("by_user", ["userId"])
     .index("by_user_and_status", ["userId", "status"])
-    .index("by_user_and_agent", ["userId", "agent"]),
+    .index("by_user_and_agent", ["userId", "agent"])
+    .index("by_scheduled_at", ["scheduledAt"]),
 })

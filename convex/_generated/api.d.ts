@@ -12,6 +12,8 @@ import type * as canvas from "../canvas.js";
 import type * as canvasChat from "../canvasChat.js";
 import type * as canvasChatHelpers from "../canvasChatHelpers.js";
 import type * as content from "../content.js";
+import type * as cronHelpers from "../cronHelpers.js";
+import type * as crons from "../crons.js";
 import type * as embeddings from "../embeddings.js";
 import type * as embeddingsActions from "../embeddingsActions.js";
 import type * as generation from "../generation.js";
@@ -43,6 +45,8 @@ declare const fullApi: ApiFromModules<{
   canvasChat: typeof canvasChat;
   canvasChatHelpers: typeof canvasChatHelpers;
   content: typeof content;
+  cronHelpers: typeof cronHelpers;
+  crons: typeof crons;
   embeddings: typeof embeddings;
   embeddingsActions: typeof embeddingsActions;
   generation: typeof generation;

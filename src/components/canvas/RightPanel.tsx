@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
+import ReactMarkdown from 'react-markdown'
 import { AgentHeader } from './AgentHeader'
 import type { Id } from '../../../convex/_generated/dataModel'
 
@@ -160,15 +161,27 @@ export function RightPanel({
                   background: msg.role === 'user' ? 'var(--ember-muted)' : 'var(--bg-surface)',
                   border: `0.5px solid ${msg.role === 'user' ? 'rgba(255,107,53,0.18)' : 'rgba(255,255,255,0.06)'}`,
                 }}>
-                  <div style={{
-                    fontSize: 10.5, color: 'var(--text-primary)',
-                    lineHeight: 1.6, whiteSpace: 'pre-line',
+                <div style={{
+                    fontSize: 13, color: 'var(--text-primary)',
+                    lineHeight: 1.6,
                   }}>
                     {msg.content === '...' ? (
                       <span style={{ color: 'var(--text-muted)', animation: 'pulse 1s ease-in-out infinite' }}>
                         Thinking...
                       </span>
-                    ) : msg.content}
+                    ) : (
+                      <ReactMarkdown
+                        components={{
+                          p: ({children}) => <p style={{margin: '0 0 6px 0'}}>{children}</p>,
+                          strong: ({children}) => <strong style={{fontWeight: 600, color: 'var(--text-primary)'}}>{children}</strong>,
+                          em: ({children}) => <em style={{fontStyle: 'italic'}}>{children}</em>,
+                          ul: ({children}) => <ul style={{margin: '4px 0', paddingLeft: 16}}>{children}</ul>,
+                          li: ({children}) => <li style={{marginBottom: 2}}>{children}</li>,
+                        }}
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
+                    )}
                   </div>
                 </div>
               </div>
@@ -215,7 +228,7 @@ export function RightPanel({
             <div style={{
               display: 'flex', alignItems: 'center', gap: 6,
               background: 'var(--bg-surface)', border: '0.5px solid var(--border)',
-              borderRadius: 6, padding: '2px 4px',
+              borderRadius: 12, padding: '6px 10px',
             }}>
               <input
                 ref={inputRef}
@@ -226,7 +239,7 @@ export function RightPanel({
                 style={{
                   flex: 1, background: 'transparent', border: 'none',
                   outline: 'none', color: 'var(--text-primary)',
-                  fontSize: 10.5, padding: '6px 6px',
+                  fontSize: 13, padding: '6px 6px',
                   fontFamily: 'var(--font-inter), sans-serif',
                 }}
               />

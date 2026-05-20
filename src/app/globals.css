@@ -228,7 +228,7 @@ body {
 /* ─── Glass Card ─── */
 .glass-card {
   background: var(--bg-surface);
-  border: 1px solid var(--border);
+  border: 0.5px solid var(--border);
   border-radius: var(--radius-lg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);

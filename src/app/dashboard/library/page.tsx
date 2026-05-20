@@ -43,7 +43,7 @@ export default function LibraryPage() {
   const { profile, isLoading: profileLoading } = useCurrentUser()
   const [activeFilter, setActiveFilter] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid')
 
   const items = useQuery(
     api.content.list,

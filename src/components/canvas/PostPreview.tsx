@@ -108,12 +108,17 @@ export function PostPreview({
   }
 
   /* ─── Topbar: Bold / Italic ─── */
-  const wrapSelection = (wrapper: string) => {
+  const applyInlineFormat = (wrapper: string) => {
     const sel = window.getSelection()
     if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return
-    const selectedText = sel.toString()
-    const newText = post.replace(selectedText, `${wrapper}${selectedText}${wrapper}`)
-    onPostChange(newText)
+    const range = sel.getRangeAt(0)
+    const selectedText = range.toString()
+    if (!selectedText) return
+    const start = post.indexOf(selectedText)
+    if (start === -1) return
+    const before = post.slice(0, start)
+    const after = post.slice(start + selectedText.length)
+    onPostChange(`${before}${wrapper}${selectedText}${wrapper}${after}`)
   }
 
   /* ─── Topbar: Copy ─── */
@@ -197,14 +202,18 @@ export function PostPreview({
         borderBottom: '0.5px solid var(--border)',
       }}>
         {/* Bold */}
-        <button onClick={() => wrapSelection('**')} title="Bold" style={{ ...iconBtn, fontWeight: 700, fontSize: 11 }}>
-          B
-        </button>
+        <button
+          onMouseDown={(e) => { e.preventDefault(); applyInlineFormat('**') }}
+          title="Bold"
+          style={{ ...iconBtn, fontWeight: 700, fontSize: 11 }}
+        >B</button>
 
         {/* Italic */}
-        <button onClick={() => wrapSelection('_')} title="Italic" style={{ ...iconBtn, fontStyle: 'italic', fontSize: 11 }}>
-          I
-        </button>
+        <button
+          onMouseDown={(e) => { e.preventDefault(); applyInlineFormat('_') }}
+          title="Italic"
+          style={{ ...iconBtn, fontStyle: 'italic', fontSize: 11 }}
+        >I</button>
 
         <div style={{ width: 1, height: 16, background: 'var(--border)', margin: '0 3px' }} />
 
@@ -493,7 +502,7 @@ export function PostPreview({
         <div style={{
           display: 'flex', alignItems: 'center', gap: 6,
           background: 'var(--bg-page)', border: '0.5px solid var(--border)',
-          borderRadius: 6, padding: '2px 4px',
+          borderRadius: 12, padding: '6px 10px',
           opacity: isRefining ? 0.6 : 1,
           transition: 'opacity 150ms ease',
         }}>
@@ -504,12 +513,12 @@ export function PostPreview({
             onKeyDown={(e) => { if (e.key === 'Enter') handleRefineSubmit() }}
             placeholder="Ask the agent to change something..."
             disabled={isRefining}
-            style={{
-              flex: 1, background: 'transparent', border: 'none',
-              outline: 'none', color: 'var(--text-primary)',
-              fontSize: 10.5, padding: '6px 6px',
-              fontFamily: 'var(--font-inter), sans-serif',
-            }}
+              style={{
+                flex: 1, background: 'transparent', border: 'none',
+                outline: 'none', color: 'var(--text-primary)',
+                fontSize: 13, padding: '6px 6px',
+                fontFamily: 'var(--font-inter), sans-serif',
+              }}
           />
           <button
             onClick={handleRefineSubmit}

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useQuery } from 'convex/react'
+import { useQuery, useMutation } from 'convex/react'
 import { api } from '../../../../convex/_generated/api'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { Card, CardContent } from '@/components/ui/card'
@@ -57,6 +57,16 @@ export default function SchedulePage() {
 
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [viewTab, setViewTab] = useState<ViewTab>('Month')
+  const [selectedDay, setSelectedDay] = useState<number | null>(null)
+  const [selectedPost, setSelectedPost] = useState<PostItem | null>(null)
+  const [toast, setToast] = useState<string | null>(null)
+  const [datePickerFor, setDatePickerFor] = useState<string | null>(null)
+  const [datePickerValue, setDatePickerValue] = useState('')
+
+  const scheduleMut = useMutation(api.posts.schedule)
+  const unscheduleMut = useMutation(api.posts.unschedule)
+
+  const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000) }
 
   const goToPrevMonth = () => {
     setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))
@@ -73,6 +83,7 @@ export default function SchedulePage() {
 
   const postsWithDate = scheduledPosts.filter((p: PostItem) => p.scheduledAt != null)
   const postsWithoutDate = scheduledPosts.filter((p: PostItem) => p.scheduledAt == null)
+  const allDrafts = allPosts?.filter((p: PostItem) => p.status === 'draft') ?? []
 
   const isLoading = userLoading || allPosts === undefined
 
@@ -176,12 +187,13 @@ export default function SchedulePage() {
 
                   const isToday = day === today.getDate() && isCurrentMonth
                   const dayPosts = getPostsForDay(day)
+                  const isSelected = selectedDay === day
 
                   return (
-                    <div key={day} className="cal-cell" style={{
-                      minHeight: 100, background: isToday ? 'var(--ember-muted)' : 'var(--bg-surface)',
-                      border: `0.5px solid ${isToday ? 'var(--ember)' : 'var(--border)'}`,
-                      borderRadius: 8, padding: 8, cursor: 'default', transition: 'background 0.14s',
+                    <div key={day} className="cal-cell" onClick={() => { setSelectedDay(day); setSelectedPost(null) }} style={{
+                      minHeight: 100, background: isSelected ? 'var(--bg-elevated)' : isToday ? 'var(--ember-muted)' : 'var(--bg-surface)',
+                      border: `0.5px solid ${isSelected ? 'var(--ember)' : isToday ? 'var(--ember)' : 'var(--border)'}`,
+                      borderRadius: 8, padding: 8, cursor: 'pointer', transition: 'background 0.14s',
                     }}>
                       <div style={{ fontSize: 12, fontWeight: isToday ? 600 : 400, color: isToday ? 'var(--ember)' : 'var(--text-muted)', marginBottom: 6, fontFamily: "'Inter', sans-serif" }}>
                         {day}
@@ -345,6 +357,121 @@ export default function SchedulePage() {
                   ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* ═══ SELECTED DAY PANEL ═══ */}
+        {viewTab === 'Month' && selectedDay !== null && !selectedPost && (() => {
+          const dayPosts = getPostsForDay(selectedDay)
+          return (
+            <Card className="mt-4">
+              <CardContent className="p-4">
+                <div className="text-xs font-semibold text-[var(--text-muted)] mb-3" style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.05em', textTransform: 'uppercase' as const }}>
+                  {formatMonthYear(currentMonth).split(' ')[0]} {selectedDay} — {dayPosts.length} post{dayPosts.length !== 1 ? 's' : ''}
+                </div>
+                {dayPosts.length === 0 ? (
+                  <div className="text-sm text-[var(--text-muted)]">No posts scheduled for this date.</div>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    {dayPosts.map((post: PostItem) => (
+                      <button key={post._id} onClick={() => setSelectedPost(post)} className="list-card" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: 'var(--bg-surface)', border: '0.5px solid var(--border)', borderRadius: 8, cursor: 'pointer', textAlign: 'left', width: '100%', transition: 'border-color 0.14s' }}>
+                        <div style={{ width: 28, height: 28, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: post.agent === 'authority' ? 'var(--ember-muted)' : 'rgba(55,138,221,0.12)' }}>
+                          <svg width="12" height="12" fill="none" viewBox="0 0 16 16" stroke={post.agent === 'authority' ? 'var(--ember)' : 'var(--info)'} strokeWidth="1.5" strokeLinecap="round"><path d="M2 14 C2 9 5 3 12 2" /><path d="M6 14 C6 10 8.5 6 12 5" /></svg>
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 13, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{post.title || post.body.slice(0, 60)}</div>
+                          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{post.agent === 'authority' ? 'LinkedIn' : 'X'}</div>
+                        </div>
+                        <Badge variant="outline" className="text-[9px] shrink-0">{post.status}</Badge>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <Button variant="ghost" size="sm" className="mt-3 text-xs" onClick={() => setSelectedDay(null)}>Close</Button>
+              </CardContent>
+            </Card>
+          )
+        })()}
+
+        {/* ═══ POST DETAIL PANEL ═══ */}
+        {selectedPost && (() => {
+          const isDue = selectedPost.scheduledAt != null && selectedPost.scheduledAt <= Date.now()
+          const schedDate = selectedPost.scheduledAt ? new Date(selectedPost.scheduledAt) : null
+          return (
+            <Card className="mt-4">
+              <CardContent className="p-5">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <div className="text-xs font-semibold text-[var(--text-muted)]" style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.05em', textTransform: 'uppercase' as const }}>Post Detail</div>
+                  <Button variant="ghost" size="sm" className="text-xs" onClick={() => setSelectedPost(null)}>✕ Close</Button>
+                </div>
+                <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4, fontFamily: "'DM Serif Display', serif" }}>{selectedPost.title || 'Untitled post'}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 12 }}>
+                  {selectedPost.agent === 'authority' ? 'The Authority · LinkedIn' : 'The Catalyst · X'}
+                  {schedDate && <> · Scheduled for {schedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</>}
+                </div>
+                <div style={{ background: 'var(--bg-surface)', border: '0.5px solid var(--border)', borderRadius: 8, padding: 14, fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.7, maxHeight: 200, overflowY: 'auto', marginBottom: 14 }}>
+                  {selectedPost.body.slice(0, 500)}{selectedPost.body.length > 500 ? '…' : ''}
+                </div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' as const }}>
+                  {selectedPost.status === 'scheduled' && (
+                    <>
+                      <Button size="sm" disabled={!isDue} onClick={() => { navigator.clipboard.writeText(selectedPost.body); window.open('https://www.linkedin.com/feed/', '_blank'); showToast('Copied! Paste into LinkedIn.') }} style={{ background: isDue ? 'var(--ember)' : 'var(--bg-elevated)', color: isDue ? '#fff' : 'var(--text-muted)' }}>
+                        {isDue ? '📋 Publish to LinkedIn' : `Publishes on ${schedDate?.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={async () => { await unscheduleMut({ postId: selectedPost._id as any }); setSelectedPost(null); setSelectedDay(null); showToast('Post unscheduled') }}>
+                        Unschedule
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )
+        })()}
+
+        {/* ═══ DRAFT POSTS — SCHEDULE SECTION ═══ */}
+        {!isLoading && allDrafts.length > 0 && (
+          <div className="mt-6">
+            <div className="text-xs font-semibold text-[var(--text-muted)] mb-3" style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.05em', textTransform: 'uppercase' as const }}>
+              Draft posts ({allDrafts.length})
+            </div>
+            <div className="flex flex-col gap-2">
+              {allDrafts.map((post: PostItem) => (
+                <Card key={post._id} className="list-card">
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: post.agent === 'authority' ? 'var(--ember-muted)' : 'rgba(55,138,221,0.12)' }}>
+                      <svg width="14" height="14" fill="none" viewBox="0 0 16 16" stroke={post.agent === 'authority' ? 'var(--ember)' : 'var(--info)'} strokeWidth="1.5" strokeLinecap="round"><path d="M2 14 C2 9 5 3 12 2" /><path d="M6 14 C6 10 8.5 6 12 5" /></svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[13px] text-[var(--text-primary)] truncate">{post.title || post.body.slice(0, 60)}</div>
+                      <div className="text-[11px] text-[var(--text-muted)]">{post.agent === 'authority' ? 'The Authority · LinkedIn' : 'The Catalyst · X'}</div>
+                    </div>
+                    {datePickerFor === post._id ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <input type="date" value={datePickerValue} onChange={(e) => setDatePickerValue(e.target.value)} style={{ fontSize: 12, padding: '4px 8px', borderRadius: 6, border: '0.5px solid var(--border)', background: 'var(--bg-surface)', color: 'var(--text-primary)', fontFamily: "'Inter', sans-serif" }} />
+                        <Button size="sm" className="text-xs" disabled={!datePickerValue} onClick={async () => {
+                          const ts = new Date(datePickerValue + 'T09:00:00Z').getTime()
+                          await scheduleMut({ postId: post._id as any, scheduledAt: ts })
+                          setDatePickerFor(null); setDatePickerValue(''); showToast('Post scheduled!')
+                        }}>Set</Button>
+                        <Button variant="ghost" size="sm" className="text-xs" onClick={() => { setDatePickerFor(null); setDatePickerValue('') }}>✕</Button>
+                      </div>
+                    ) : (
+                      <Button variant="outline" size="sm" className="text-xs shrink-0" onClick={() => setDatePickerFor(post._id)}>
+                        📅 Schedule
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Toast */}
+        {toast && (
+          <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', background: 'var(--bg-elevated)', border: '0.5px solid var(--ember)', color: 'var(--text-primary)', padding: '10px 20px', borderRadius: 10, fontSize: 13, fontWeight: 500, zIndex: 9999, boxShadow: '0 8px 24px rgba(0,0,0,0.3)', animation: 'fadeIn 0.18s ease' }}>
+            {toast}
           </div>
         )}
 

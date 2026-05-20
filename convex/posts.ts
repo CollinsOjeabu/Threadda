@@ -257,3 +257,33 @@ export const update = mutation({
     return null
   },
 })
+
+/**
+ * Unschedule a post: set status back to draft and clear scheduledAt.
+ */
+export const unschedule = mutation({
+  args: { postId: v.id("agentPosts") },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new ConvexError("Not authenticated")
+
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .unique()
+    if (!profile) throw new ConvexError("Profile not found")
+
+    const post = await ctx.db.get(args.postId)
+    if (!post) throw new ConvexError({ code: "NOT_FOUND", message: "Post not found" })
+    if (post.userId !== profile._id) {
+      throw new ConvexError({ code: "FORBIDDEN", message: "Not authorized" })
+    }
+
+    await ctx.db.patch(args.postId, {
+      status: "draft",
+      scheduledAt: undefined,
+    })
+    return null
+  },
+})
