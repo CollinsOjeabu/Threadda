@@ -95,12 +95,17 @@ ${sourceContext}${voiceContext}`
     const Anthropic = (await import("@anthropic-ai/sdk")).default
     const claude = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
-    const response = await claude.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 800,
-      system: systemPrompt,
-      messages: claudeMessages,
-    })
+    let response
+    try {
+      response = await claude.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 800,
+        system: systemPrompt,
+        messages: claudeMessages,
+      })
+    } catch {
+      throw new ConvexError("Our AI is temporarily unavailable. Please try again in a moment.")
+    }
 
     const textBlock = response.content.find(
       (block: { type: string }) => block.type === "text"

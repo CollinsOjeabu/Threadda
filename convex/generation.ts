@@ -201,12 +201,17 @@ Generate a ${platformLabel} post that synthesises these sources. The post should
     const Anthropic = (await import("@anthropic-ai/sdk")).default
     const claude = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
-    const response = await claude.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1500,
-      system: systemPrompt,
-      messages: [{ role: "user", content: userPrompt }],
-    })
+    let response
+    try {
+      response = await claude.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1500,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userPrompt }],
+      })
+    } catch {
+      throw new ConvexError("Our AI is temporarily unavailable. Please try again in a moment.")
+    }
 
     const textBlock = response.content.find(
       (block: { type: string }) => block.type === "text"
@@ -321,12 +326,17 @@ Rewrite the ${platformLabel} post incorporating this feedback. Return ONLY valid
     const Anthropic = (await import("@anthropic-ai/sdk")).default
     const claude = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
-    const response = await claude.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1500,
-      system: systemPrompt,
-      messages: [{ role: "user", content: userPrompt }],
-    })
+    let response
+    try {
+      response = await claude.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1500,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userPrompt }],
+      })
+    } catch {
+      throw new ConvexError("Our AI is temporarily unavailable. Please try again in a moment.")
+    }
 
     const textBlock = response.content.find(
       (block: { type: string }) => block.type === "text"

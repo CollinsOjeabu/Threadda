@@ -73,6 +73,16 @@ export default function NewContentPage() {
       router.push('/dashboard/library')
     } catch (err: unknown) {
       setPipelineStep(-1)
+      if (err instanceof Error) {
+        try {
+          const data = JSON.parse(err.message)
+          if (data?.code === 'RATE_LIMIT_EXCEEDED') {
+            const resetAt = data.resetAt ? new Date(data.resetAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'next month'
+            setError(`You've reached your source import limit for this month. Resets on ${resetAt}.`)
+            return
+          }
+        } catch { /* not JSON */ }
+      }
       if (err instanceof Error && err.message.includes('scrape')) {
         setError("Couldn't reach that URL. Try pasting the content manually instead.")
       } else if (err instanceof Error && err.message.includes('Summar')) {

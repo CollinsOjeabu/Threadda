@@ -91,6 +91,8 @@ export function PostPreview({
     try {
       await onRefinePost(instruction)
       setRefineInput('')
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : 'Refinement failed. Please try again.')
     } finally {
       setIsRefining(false)
     }
@@ -102,6 +104,8 @@ export function PostPreview({
     setIsRefining(true)
     try {
       await onRefinePost(instruction)
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : 'Refinement failed. Please try again.')
     } finally {
       setIsRefining(false)
     }
@@ -137,6 +141,8 @@ export function PostPreview({
     setIsRefining(true)
     try {
       await onRefinePost(instruction)
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : 'Refinement failed. Please try again.')
     } finally {
       setIsRefining(false)
     }

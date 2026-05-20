@@ -13,6 +13,28 @@ import { Constellation } from '@/components/canvas/Constellation'
 import { RightPanel } from '@/components/canvas/RightPanel'
 import { PostPreview } from '@/components/canvas/PostPreview'
 
+/* ─── Error parser for Convex errors (rate limits, etc.) ─── */
+const parseError = (e: unknown): string => {
+  if (e instanceof Error) {
+    try {
+      const data = JSON.parse(e.message)
+      if (data?.code === 'RATE_LIMIT_EXCEEDED') {
+        const resource = data.resource as string
+        const resetAt = data.resetAt ? new Date(data.resetAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'next month'
+        const labels: Record<string, string> = {
+          generations: 'post generations',
+          ingestions: 'source imports',
+          canvasSessions: 'canvas sessions',
+          voiceDnaAnalyses: 'Voice DNA analyses',
+        }
+        return `You've reached your ${labels[resource] ?? resource} limit for this month. Resets on ${resetAt}.`
+      }
+    } catch { /* not JSON, fall through */ }
+    return e.message || 'Something went wrong. Please try again.'
+  }
+  return 'Something went wrong. Please try again.'
+}
+
 /* ─── State type ─── */
 type CanvasState = 'constellation' | 'session' | 'post-preview'
 
@@ -155,12 +177,12 @@ function CanvasPageInner() {
         }
         return updated
       })
-    } catch {
+    } catch (e) {
       setChatMessages((prev) => {
         const updated = [...prev]
         const typingIdx = updated.findLastIndex((m) => m.role === 'agent' && m.content === '...')
         if (typingIdx >= 0) {
-          updated[typingIdx] = { role: 'agent', content: 'Sorry, I hit an error. Please try again.' }
+          updated[typingIdx] = { role: 'agent', content: parseError(e) }
         }
         return updated
       })
@@ -184,7 +206,7 @@ function CanvasPageInner() {
     } catch (e) {
       setChatMessages((prev) => [...prev, {
         role: 'agent',
-        content: `Error generating post: ${e instanceof Error ? e.message : 'Generation failed'}. Please try again.`,
+        content: parseError(e),
       }])
     } finally {
       setIsGenerating(false)
@@ -204,7 +226,10 @@ function CanvasPageInner() {
       setGeneratedPostId(result.postId)
       setVoiceMatchScore(result.voiceMatchScore)
     } catch (e) {
-      console.error('Refinement failed:', e)
+      setChatMessages((prev) => [...prev, {
+        role: 'agent',
+        content: parseError(e),
+      }])
     } finally {
       setIsGenerating(false)
     }
@@ -231,7 +256,7 @@ function CanvasPageInner() {
       })
       setGeneratedPost(response)
     } catch (e) {
-      console.error('Refinement failed:', e)
+      throw new Error(parseError(e))
     }
   }, [activeSessionId, generatedPost, sendMessageAction])
 
