@@ -3,6 +3,7 @@
 import { action } from "./_generated/server"
 import { api, internal } from "./_generated/api"
 import { v, ConvexError } from "convex/values"
+import { CLAUDE_MODEL } from "./models"
 
 /* ── Voice profile type from Claude analysis ── */
 interface VoiceDna {
@@ -204,7 +205,7 @@ Generate a ${platformLabel} post that synthesises these sources. The post should
     let response
     try {
       response = await claude.messages.create({
-        model: "claude-sonnet-4-20250514",
+        model: CLAUDE_MODEL,
         max_tokens: 1500,
         system: systemPrompt,
         messages: [{ role: "user", content: userPrompt }],
@@ -329,7 +330,7 @@ Rewrite the ${platformLabel} post incorporating this feedback. Return ONLY valid
     let response
     try {
       response = await claude.messages.create({
-        model: "claude-sonnet-4-20250514",
+        model: CLAUDE_MODEL,
         max_tokens: 1500,
         system: systemPrompt,
         messages: [{ role: "user", content: userPrompt }],

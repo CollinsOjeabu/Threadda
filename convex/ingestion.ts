@@ -5,6 +5,7 @@ import { internal } from "./_generated/api"
 import { v } from "convex/values"
 import { ConvexError } from "convex/values"
 import type { Id } from "./_generated/dataModel"
+import { CLAUDE_MODEL } from "./models"
 
 /**
  * Full URL → content ingestion pipeline.
@@ -67,7 +68,7 @@ export const startIngestion = action({
       const claude = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
       const summaryResult = await claude.messages.create({
-        model: "claude-sonnet-4-20250514",
+        model: CLAUDE_MODEL,
         max_tokens: 300,
         system:
           "You are a research assistant. Extract the key insight from this article in 2-3 sentences. Be specific and factual. Focus on what is novel or actionable. Return only the summary, no preamble.",
@@ -194,7 +195,7 @@ export const processRawText = action({
       const claude = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
       const summaryResult = await claude.messages.create({
-        model: "claude-sonnet-4-20250514",
+        model: CLAUDE_MODEL,
         max_tokens: 300,
         messages: [
           {

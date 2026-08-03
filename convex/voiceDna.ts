@@ -3,6 +3,7 @@
 import { action } from "./_generated/server"
 import { internal } from "./_generated/api"
 import { ConvexError } from "convex/values"
+import { CLAUDE_MODEL } from "./models"
 
 /**
  * Analyze manual writing samples using Claude to generate a Voice DNA profile.
@@ -40,7 +41,7 @@ export const analyzeManualSamples = action({
     const claude = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
     const result = await claude.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: CLAUDE_MODEL,
       max_tokens: 500,
       system:
         "You are a writing voice analyst. Analyze writing samples and extract voice characteristics. Return ONLY valid JSON, no preamble, no markdown fences.",

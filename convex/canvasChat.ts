@@ -4,6 +4,7 @@ import { action } from "./_generated/server"
 import { internal } from "./_generated/api"
 import { v } from "convex/values"
 import { ConvexError } from "convex/values"
+import { CLAUDE_MODEL } from "./models"
 
 /**
  * Send a message to the Canvas AI agent.
@@ -98,7 +99,7 @@ ${sourceContext}${voiceContext}`
     let response
     try {
       response = await claude.messages.create({
-        model: "claude-sonnet-4-20250514",
+        model: CLAUDE_MODEL,
         max_tokens: 800,
         system: systemPrompt,
         messages: claudeMessages,
