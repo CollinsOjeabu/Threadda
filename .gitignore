@@ -40,3 +40,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# internal product docs — scope, specs and recon notes, kept local only
+/PRD_V3.md
+/docs/
