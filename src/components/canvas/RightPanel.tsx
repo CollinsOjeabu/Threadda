@@ -173,7 +173,7 @@ export function RightPanel({
                   border: `0.5px solid ${msg.role === 'user' ? 'rgba(255,107,53,0.18)' : 'rgba(255,255,255,0.06)'}`,
                 }}>
                 <div style={{
-                    fontSize: 13, color: 'var(--text-primary)',
+                    fontSize: 15, color: 'var(--text-primary)',
                     lineHeight: 1.6,
                   }}>
                     {msg.content === '...' ? (
@@ -250,7 +250,7 @@ export function RightPanel({
                 style={{
                   flex: 1, background: 'transparent', border: 'none',
                   outline: 'none', color: 'var(--text-primary)',
-                  fontSize: 13, padding: '6px 6px',
+                  fontSize: 15, padding: '6px 6px',
                   fontFamily: 'var(--font-inter), sans-serif',
                 }}
               />

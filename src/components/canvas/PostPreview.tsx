@@ -111,19 +111,7 @@ export function PostPreview({
     }
   }
 
-  /* ─── Topbar: Bold / Italic ─── */
-  const applyInlineFormat = (wrapper: string) => {
-    const sel = window.getSelection()
-    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return
-    const range = sel.getRangeAt(0)
-    const selectedText = range.toString()
-    if (!selectedText) return
-    const start = post.indexOf(selectedText)
-    if (start === -1) return
-    const before = post.slice(0, start)
-    const after = post.slice(start + selectedText.length)
-    onPostChange(`${before}${wrapper}${selectedText}${wrapper}${after}`)
-  }
+
 
   /* ─── Topbar: Copy ─── */
   const handleCopyPost = async () => {
@@ -207,21 +195,7 @@ export function PostPreview({
         padding: '5px 24px', flexShrink: 0,
         borderBottom: '0.5px solid var(--border)',
       }}>
-        {/* Bold */}
-        <button
-          onMouseDown={(e) => { e.preventDefault(); applyInlineFormat('**') }}
-          title="Bold"
-          style={{ ...iconBtn, fontWeight: 700, fontSize: 11 }}
-        >B</button>
 
-        {/* Italic */}
-        <button
-          onMouseDown={(e) => { e.preventDefault(); applyInlineFormat('_') }}
-          title="Italic"
-          style={{ ...iconBtn, fontStyle: 'italic', fontSize: 11 }}
-        >I</button>
-
-        <div style={{ width: 1, height: 16, background: 'var(--border)', margin: '0 3px' }} />
 
         {/* Shorten */}
         <button

@@ -44,7 +44,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [])
 
   const handleToggle = useCallback(() => setCollapsed((prev) => !prev), [])
-  const handleSearchOpen = useCallback(() => setSearchOpen(true), [])
+  const handleSearchOpen = useCallback(() => {
+    setSearchOpen(true)
+    window.dispatchEvent(new CustomEvent('threadda-open-search'))
+  }, [])
 
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
