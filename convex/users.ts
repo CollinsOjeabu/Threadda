@@ -228,6 +228,65 @@ export const deleteByClerkId = internalMutation({
 })
 
 /**
+ * Delete ALL user data across every table, then delete the profile.
+ * Called from the Clerk webhook endpoint on user.deleted events.
+ * Cascades: contentItems, agentPosts, canvasSessions, graphEdges, embeddings, profile.
+ */
+export const deleteAllUserData = internalMutation({
+  args: { clerkId: v.string() },
+  handler: async (ctx, args) => {
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.clerkId))
+      .first()
+    if (!profile) return null
+
+    const userId = profile._id
+
+    // Delete content items — index: contentItems.by_user
+    const contentItems = await ctx.db
+      .query("contentItems")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect()
+    for (const item of contentItems) await ctx.db.delete(item._id)
+
+    // Delete posts — index: agentPosts.by_user
+    const posts = await ctx.db
+      .query("agentPosts")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect()
+    for (const post of posts) await ctx.db.delete(post._id)
+
+    // Delete canvas sessions — index: canvasSessions.by_user
+    const sessions = await ctx.db
+      .query("canvasSessions")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect()
+    for (const session of sessions) await ctx.db.delete(session._id)
+
+    // Delete graph edges — index: graphEdges.by_user
+    const edges = await ctx.db
+      .query("graphEdges")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect()
+    for (const edge of edges) await ctx.db.delete(edge._id)
+
+    // Delete embeddings — index: embeddings.by_user_id
+    // (embeddings.by_user is a vectorIndex, not a regular index)
+    const embeddings = await ctx.db
+      .query("embeddings")
+      .withIndex("by_user_id", (q) => q.eq("userId", userId))
+      .collect()
+    for (const embedding of embeddings) await ctx.db.delete(embedding._id)
+
+    // Delete profile last
+    await ctx.db.delete(profile._id)
+
+    return null
+  },
+})
+
+/**
  * Update voice profile settings.
  * Called from the Settings page.
  */
