@@ -140,19 +140,6 @@ export const startIngestion = action({
 })
 
 /**
- * Get the ingestion status of a content item.
- */
-export const getIngestionStatus = action({
-  args: { itemId: v.id("contentItems") },
-  handler: async (ctx, args): Promise<{ status: string; errorMessage?: string } | null> => {
-    const item: { status: string; errorMessage?: string } | null = await ctx.runQuery(internal.helpers.getItemStatus, {
-      itemId: args.itemId,
-    })
-    return item
-  },
-})
-
-/**
  * Process raw text through the Claude summarization + OpenAI embedding pipeline.
  * Used for file uploads (PDF, TXT, MD) and any content that already has text
  * but needs AI processing (summary, embedding, knowledge graph edges).

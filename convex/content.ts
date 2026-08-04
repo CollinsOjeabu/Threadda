@@ -246,51 +246,6 @@ export const update = mutation({
 })
 
 /**
- * Search content items by title.
- */
-export const search = query({
-  args: {
-    userId: v.id("profiles"),
-    query: v.string(),
-  },
-  returns: v.array(
-    v.object({
-      _id: v.id("contentItems"),
-      _creationTime: v.number(),
-      userId: v.id("profiles"),
-      type: v.union(
-        v.literal("article"),
-        v.literal("video"),
-        v.literal("note"),
-        v.literal("tweet"),
-        v.literal("pdf"),
-      ),
-      title: v.string(),
-      url: v.optional(v.string()),
-      rawText: v.optional(v.string()),
-      summary: v.optional(v.string()),
-      tags: v.optional(v.array(v.string())),
-      embeddingId: v.optional(v.string()),
-      status: v.union(
-        v.literal("queued"),
-        v.literal("processing"),
-        v.literal("ready"),
-        v.literal("error"),
-      ),
-      errorMessage: v.optional(v.string()),
-    }),
-  ),
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query("contentItems")
-      .withSearchIndex("search_content", (q) =>
-        q.search("title", args.query).eq("userId", args.userId),
-      )
-      .take(20)
-  },
-})
-
-/**
  * Create a content item using Clerk auth (no userId arg needed).
  * Used by onboarding and other auth-gated flows.
  */
