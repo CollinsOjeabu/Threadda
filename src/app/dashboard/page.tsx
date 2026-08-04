@@ -24,14 +24,14 @@ function timeAgo(ts: number): string {
 export default function DashboardHome() {
   const router = useRouter()
   const { profile, isLoading: userLoading } = useCurrentUser()
-  const contentItems = useQuery(api.content.list, profile?._id ? { userId: profile._id } : 'skip')
-  const agentPosts = useQuery(api.posts.list, profile?._id ? { userId: profile._id } : 'skip')
+  const contentItems = useQuery(api.content.list, {})
+  const agentPosts = useQuery(api.posts.list, {})
   const graphEdgeCount = useQuery(api.graphEdges.getCountForUser, {})
 
   // Content ideas
   const [ideas, setIdeas] = useState<Array<{ title: string; sourceCount: number; agent: string; sourceIds: string[] }>>([])
   const [ideasLoading, setIdeasLoading] = useState(false)
-  const generateIdeas = useAction(api.ideas.getForUser)
+  const generateIdeas = useAction(api.ideasActions.getForUser)
 
   useEffect(() => {
     if (profile?._id && contentItems && contentItems.length >= 1 && ideas.length === 0 && !ideasLoading) {
@@ -53,7 +53,7 @@ export default function DashboardHome() {
   const scoredPosts = agentPosts?.filter((p: any) => typeof p.voiceMatchScore === 'number') ?? []
   const avgVoice = scoredPosts.length > 0 ? Math.round(scoredPosts.reduce((s: number, p: any) => s + p.voiceMatchScore, 0) / scoredPosts.length) : null
 
-  const loading = contentItems === undefined || agentPosts === undefined
+  const loading = userLoading || contentItems === undefined || agentPosts === undefined
 
   // Build activity timeline
   const activities: Array<{ icon: string; text: string; bold: string; time: number }> = []

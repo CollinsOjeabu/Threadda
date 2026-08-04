@@ -3,66 +3,6 @@ import { v } from "convex/values"
 import { ConvexError } from "convex/values"
 
 /**
- * Get the current user's profile by their Clerk ID.
- * Called on every authenticated page load.
- */
-export const getByClerkId = query({
-  args: { clerkId: v.string() },
-  returns: v.union(
-    v.object({
-      _id: v.id("profiles"),
-      _creationTime: v.number(),
-      clerkId: v.string(),
-      email: v.string(),
-      name: v.optional(v.string()),
-      avatarUrl: v.optional(v.string()),
-      plan: v.union(v.literal("free"), v.literal("pro"), v.literal("team"), v.literal("internal")),
-      onboardedAt: v.optional(v.number()),
-      onboardingComplete: v.optional(v.boolean()),
-      linkedInUrl: v.optional(v.string()),
-      twitterHandle: v.optional(v.string()),
-      voiceRawSamples: v.optional(v.array(v.string())),
-      voiceProfile: v.optional(
-        v.object({
-          storytelling: v.optional(v.number()),
-          technical: v.optional(v.number()),
-          provocative: v.optional(v.number()),
-          datadriven: v.optional(v.number()),
-          formality: v.optional(v.number()),
-          avgSentenceLength: v.optional(v.number()),
-          usesQuestions: v.optional(v.boolean()),
-          emojiUsage: v.optional(v.string()),
-          signaturePhrases: v.optional(v.array(v.string())),
-          writingPersona: v.optional(v.string()),
-          trainedFrom: v.optional(v.string()),
-          trainingPostCount: v.optional(v.number()),
-          trainedAt: v.optional(v.number()),
-        }),
-      ),
-      generationsThisMonth: v.optional(v.number()),
-      ingestionsThisMonth: v.optional(v.number()),
-      canvasSessionsThisMonth: v.optional(v.number()),
-      voiceDnaAnalysesThisMonth: v.optional(v.number()),
-      periodResetAt: v.optional(v.number()),
-      theme: v.optional(v.union(v.literal("void"), v.literal("dark"), v.literal("light"))),
-      preferences: v.optional(v.object({
-        auto: v.optional(v.boolean()),
-        daily: v.optional(v.boolean()),
-        weekly: v.optional(v.boolean()),
-        discovery: v.optional(v.boolean()),
-      })),
-    }),
-    v.null(),
-  ),
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query("profiles")
-      .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.clerkId))
-      .unique()
-  },
-})
-
-/**
  * Get the current authenticated user's profile.
  * Uses Clerk auth identity — no args needed.
  */

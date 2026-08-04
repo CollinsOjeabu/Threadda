@@ -14,9 +14,17 @@ import { CLAUDE_MODEL } from "./models"
 export const startIngestion = action({
   args: {
     url: v.string(),
-    userId: v.id("profiles"),
   },
   handler: async (ctx, args): Promise<{ success: boolean; title: string; summary: string; itemId: Id<"contentItems"> }> => {
+    // Auth — resolve profile from Clerk identity
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new ConvexError("Not authenticated")
+
+    const profile = await ctx.runQuery(internal.helpers.getProfileByClerkId, {
+      clerkId: identity.subject,
+    })
+    if (!profile) throw new ConvexError("Profile not found")
+
     // Step 1: Validate URL
     let parsedUrl: URL
     try {
@@ -30,7 +38,7 @@ export const startIngestion = action({
 
     // Step 1a: Rate-limit check: ingestions
     await ctx.runMutation(internal.rateLimitHelpers.checkAndIncrementCounter, {
-      profileId: args.userId,
+      profileId: profile._id,
       resource: "ingestions",
     })
 
@@ -106,7 +114,7 @@ export const startIngestion = action({
 
     // Step 6: Store in Convex
     const itemId: Id<"contentItems"> = await ctx.runMutation(internal.helpers.saveContentItem, {
-      userId: args.userId,
+      userId: profile._id,
       url: args.url,
       title: String(title).slice(0, 200),
       rawText,
@@ -120,7 +128,7 @@ export const startIngestion = action({
         const embeddingVector: number[] = JSON.parse(embeddingStr)
         await ctx.runMutation(internal.embeddings.storeEmbedding, {
           contentItemId: itemId,
-          userId: args.userId,
+          userId: profile._id,
           vector: embeddingVector,
         })
 

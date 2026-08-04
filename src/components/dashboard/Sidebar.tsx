@@ -60,18 +60,13 @@ function NavIcon({ name, size = 15 }: { name: string; size?: number }) {
 function CommandPalette({
   open,
   onClose,
-  profileId,
 }: {
   open: boolean
   onClose: () => void
-  profileId: string | null
 }) {
   const [query, setQuery] = useState('')
   const router = useRouter()
-  const contentItems = useQuery(
-    api.content.list,
-    profileId ? { userId: profileId as any, limit: 5 } : 'skip'
-  )
+  const contentItems = useQuery(api.content.list, { limit: 5 })
 
   // Close on Escape
   useEffect(() => {
@@ -212,6 +207,18 @@ export function Sidebar({
   const { signOut } = useClerk()
   const { profile, isLoading } = useCurrentUser()
   const [searchOpen, setSearchOpen] = useState(false)
+  const [logoSrc, setLogoSrc] = useState('/images/threadda-logo-dark.svg')
+
+  useEffect(() => {
+    const updateLogo = () => {
+      const theme = document.documentElement.getAttribute('data-theme')
+      setLogoSrc(theme === 'light' ? '/images/threadda-logo.svg' : '/images/threadda-logo-dark.svg')
+    }
+    updateLogo()
+    const observer = new MutationObserver(updateLogo)
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+    return () => observer.disconnect()
+  }, [])
 
   const displayName = profile?.name ?? ''
   const initial = displayName.charAt(0).toUpperCase() || '?'
@@ -224,6 +231,12 @@ export function Sidebar({
   const openSearch = useCallback(() => setSearchOpen(true), [])
   const closeSearch = useCallback(() => setSearchOpen(false), [])
 
+  useEffect(() => {
+    const handleOpen = () => setSearchOpen(true)
+    window.addEventListener('threadda-open-search', handleOpen)
+    return () => window.removeEventListener('threadda-open-search', handleOpen)
+  }, [])
+
   /* ── COLLAPSED: Icon Rail ── */
   if (collapsed) {
     return (
@@ -232,9 +245,23 @@ export function Sidebar({
           width: 52, background: 'var(--bg-surface)',
           borderRight: '0.5px solid var(--border)',
           display: 'flex', flexDirection: 'column', alignItems: 'center',
-          flexShrink: 0, zIndex: 20, paddingTop: 10,
+          flexShrink: 0, zIndex: 20, paddingTop: 0,
           transition: 'width 0.22s cubic-bezier(0.4,0,0.2,1)',
         }}>
+          {/* Logo at the very top */}
+          <div style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '12px 0 10px',
+            borderBottom: '0.5px solid var(--border)',
+            marginBottom: 10,
+          }}>
+            {/* Threadda icon logo (Ember square with woven threads) */}
+            <img src="/images/threadda-icon.svg" alt="Threadda" style={{ width: 28, height: 28 }} />
+          </div>
+
           {/* Nav icons grouped by section */}
           {NAV_SECTIONS.map((section, si) => (
             <div key={section.section} style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -285,7 +312,7 @@ export function Sidebar({
           ))}
 
           {/* Footer */}
-          <div style={{ marginTop: 'auto', padding: '8px 0 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+          <div style={{ marginTop: 'auto', padding: '8px 0 10px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             {/* Avatar */}
             {isLoading ? (
               <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--bg-elevated)', animation: 'pulse 1.5s ease-in-out infinite' }} />
@@ -303,25 +330,10 @@ export function Sidebar({
                 fontFamily: "'DM Serif Display', serif",
               }}>{initial}</div>
             )}
-            {/* Sign out */}
-            <button
-              onClick={() => signOut({ redirectUrl: '/' })}
-              className="rail-item"
-              style={{
-                width: 28, height: 28, borderRadius: 6,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'transparent', border: 'none',
-                color: 'var(--text-faint)', cursor: 'pointer',
-              }}
-            >
-              <svg width="11" height="11" fill="none" viewBox="0 0 15 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                <path d="M6 1H3a2 2 0 00-2 2v9a2 2 0 002 2h3"/><path d="M10 11l4-4-4-4"/><line x1="5" y1="7" x2="14" y2="7"/>
-              </svg>
-            </button>
           </div>
         </aside>
 
-        <CommandPalette open={searchOpen} onClose={closeSearch} profileId={profile?._id ?? null} />
+        <CommandPalette open={searchOpen} onClose={closeSearch} />
 
         <style jsx>{`
           .rail-item:hover { background: var(--bg-elevated) !important; color: var(--text-muted) !important; }
@@ -346,52 +358,51 @@ export function Sidebar({
         {/* Row 1 — Logo + collapse */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '12px 12px 0',
+          padding: '12px 12px 10px',
+          borderBottom: '0.5px solid var(--border)',
         }}>
           <span style={{
             fontSize: 14, fontWeight: 500, letterSpacing: '-0.3px',
             color: 'var(--text-primary)', fontFamily: "'Inter', sans-serif",
           }}>
-            Thread<span style={{ color: 'var(--ember)' }}>da</span>
+            <img src={logoSrc} alt="Threadda" style={{ height: 24 }} />
           </span>
-          <button
-            onClick={onToggle}
-            title="Collapse sidebar (Ctrl+B)"
-            className="util-btn"
-            style={{
-              width: 22, height: 22, borderRadius: 4,
-              background: 'transparent', border: 'none',
-              color: 'var(--text-muted)', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}
-          >
-            <svg width="12" height="12" fill="none" viewBox="0 0 14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-              <path d="M9 4l-4 3 4 3"/>
-            </svg>
-          </button>
-        </div>
-
-        {/* Row 2 — Utility icons (loose, no container) */}
-        <div style={{
-          display: 'flex', gap: 2, padding: '6px 10px 10px',
-          borderBottom: '0.5px solid var(--border)',
-        }}>
-          {/* Search */}
-          <button
-            onClick={openSearch}
-            title="Search"
-            className="util-btn"
-            style={{
-              width: 30, height: 28, borderRadius: 5,
-              background: 'transparent', border: 'none',
-              color: 'var(--text-muted)', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}
-          >
-            <svg width="13" height="13" fill="none" viewBox="0 0 14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-              <circle cx="6" cy="6" r="4"/><line x1="9" y1="9" x2="13" y2="13"/>
-            </svg>
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            {/* Search */}
+            <button
+              onClick={openSearch}
+              title="Search"
+              className="util-btn"
+              style={{
+                width: 22, height: 22, borderRadius: 4,
+                background: 'transparent', border: 'none',
+                color: 'var(--text-muted)', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >
+              <svg width="13" height="13" fill="none" viewBox="0 0 14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                <circle cx="6" cy="6" r="4"/><line x1="9" y1="9" x2="13" y2="13"/>
+              </svg>
+            </button>
+            {/* Collapse */}
+            <button
+              onClick={onToggle}
+              title="Collapse sidebar (Ctrl+B)"
+              className="util-btn"
+              style={{
+                width: 22, height: 22, borderRadius: 4,
+                background: 'transparent', border: 'none',
+                color: 'var(--text-muted)', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <line x1="9" y1="3" x2="9" y2="21"/>
+                <path d="M16 8l-3 4 3 4"/>
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Navigation sections */}
@@ -491,7 +502,7 @@ export function Sidebar({
         </div>
       </aside>
 
-      <CommandPalette open={searchOpen} onClose={closeSearch} profileId={profile?._id ?? null} />
+      <CommandPalette open={searchOpen} onClose={closeSearch} />
 
       <style jsx>{`
         .nav-link:hover { background: var(--bg-hover) !important; color: var(--text-primary) !important; }

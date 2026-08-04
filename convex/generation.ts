@@ -278,10 +278,10 @@ export const regeneratePost = action({
     })
     if (!profile) throw new ConvexError("Profile not found")
 
-    // Fetch the post directly via a list query (actions can't use ctx.db)
-    const allPosts = await ctx.runQuery(api.posts.list, {
-      userId: profile._id,
-    })
+    // Fetch the post directly via a list query (actions can't use ctx.db).
+    // posts.list resolves the profile from ctx.auth, which propagates from
+    // this action's caller — so the result is already scoped to this user.
+    const allPosts = await ctx.runQuery(api.posts.list, {})
     const existingPost = allPosts.find((p) => p._id === args.postId)
     if (!existingPost) throw new ConvexError("Post not found")
 

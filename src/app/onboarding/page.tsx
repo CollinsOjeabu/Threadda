@@ -99,17 +99,25 @@ export default function OnboardingPage() {
     finally { setAnalysing(false) }
   }
 
-  const handleFetchSource = async () => {
+  const handleFetchSource = () => {
     if (!sourceUrl.trim()) { setError('Enter a URL.'); return }
     if (!profile) { setError('Profile not ready.'); return }
     try { new URL(sourceUrl) } catch { setError('Invalid URL format.'); return }
-    setFetchingSource(true); setFetchStatus('Fetching...'); setError('')
-    try {
-      await startIngestion({ url: sourceUrl.trim(), userId: profile._id })
-      setFetchStatus('Done ✓'); setFirstSource({ title: new URL(sourceUrl).hostname })
-      goNext()
-    } catch (e) { setError(e instanceof ConvexError ? (e as ConvexError<string>).data : 'Failed to fetch.'); setFetchStatus(null) }
-    finally { setFetchingSource(false) }
+
+    // Set immediate visual feedback and enable continuation
+    setFetchingSource(true)
+    setError('')
+    setFetchStatus('Queued in background ✓')
+    setFirstSource({ title: new URL(sourceUrl).hostname })
+
+    // Trigger action in the background (fire-and-forget)
+    startIngestion({ url: sourceUrl.trim() })
+      .catch((err) => {
+        console.error('Background ingestion failed:', err)
+      })
+      .finally(() => {
+        setFetchingSource(false)
+      })
   }
 
   const handleFinish = async (dest: string) => {

@@ -63,7 +63,6 @@ export default function NewContentPage() {
 
       const result = await startIngestion({
         url: trimmedUrl,
-        userId: profile._id,
       })
 
       clearTimeout(stepTimer1)

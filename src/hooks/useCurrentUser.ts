@@ -1,7 +1,7 @@
 "use client"
 
 import { useUser } from "@clerk/nextjs"
-import { useQuery, useMutation } from "convex/react"
+import { useQuery, useMutation, useConvexAuth } from "convex/react"
 import { api } from "../../convex/_generated/api"
 import { useEffect } from "react"
 
@@ -14,11 +14,13 @@ import { useEffect } from "react"
 export function useCurrentUser() {
   const { user: clerkUser, isLoaded: clerkLoaded } = useUser()
 
-  // Query Convex for the profile matching this Clerk ID
-  const profile = useQuery(
-    api.users.getByClerkId,
-    clerkUser ? { clerkId: clerkUser.id } : "skip",
-  )
+  // Gate on Convex's own auth state, not Clerk's. Clerk can be loaded while
+  // the Convex client is still unauthenticated, and in that window getCurrent
+  // returns null (not undefined) — which would read as "loaded, no profile".
+  const { isLoading: authLoading, isAuthenticated } = useConvexAuth()
+
+  // Query Convex for the authenticated user's profile
+  const profile = useQuery(api.users.getCurrent, isAuthenticated ? {} : "skip")
 
   const ensureProfile = useMutation(api.users.ensureProfile)
 
@@ -36,7 +38,7 @@ export function useCurrentUser() {
 
   return {
     profile: profile ?? null,
-    isLoading: !clerkLoaded || profile === undefined,
+    isLoading: authLoading || (isAuthenticated && profile === undefined),
     clerkUser,
   }
 }

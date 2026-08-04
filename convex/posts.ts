@@ -32,7 +32,6 @@ const postShape = v.object({
  */
 export const list = query({
   args: {
-    userId: v.id("profiles"),
     status: v.optional(
       v.union(
         v.literal("draft"),
@@ -46,11 +45,20 @@ export const list = query({
   },
   returns: v.array(postShape),
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) return []
+
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .unique()
+    if (!profile) return []
+
     if (args.status) {
       return await ctx.db
         .query("agentPosts")
         .withIndex("by_user_and_status", (q) =>
-          q.eq("userId", args.userId).eq("status", args.status!),
+          q.eq("userId", profile._id).eq("status", args.status!),
         )
         .order("desc")
         .collect()
@@ -58,7 +66,7 @@ export const list = query({
 
     return await ctx.db
       .query("agentPosts")
-      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .withIndex("by_user", (q) => q.eq("userId", profile._id))
       .order("desc")
       .collect()
   },
@@ -216,13 +224,18 @@ export const create = mutation({
 
     if (!profile) throw new Error("Profile not found")
 
+    // Auto-approve drafts above 90% voice match when preference is enabled
+    const autoApprove = profile.preferences?.auto === true
+    const score = args.voiceMatchScore ?? 0
+    const status = autoApprove && score >= 90 ? "approved" as const : "draft" as const
+
     return await ctx.db.insert("agentPosts", {
       userId: profile._id,
       agent: args.agent,
       platform: args.platform,
       body: args.body,
       sourceContentIds: args.sourceContentIds,
-      status: "draft",
+      status,
       title: args.title,
       voiceMatchScore: args.voiceMatchScore,
     })

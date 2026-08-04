@@ -53,7 +53,6 @@ export default function CanvasPage() {
 
 function CanvasPageInner() {
   const { profile, isLoading: userLoading } = useCurrentUser()
-  const userId = profile?._id
 
   /* ─── Core state machine ─── */
   const [canvasState, setCanvasState] = useState<CanvasState>('constellation')
@@ -82,10 +81,7 @@ function CanvasPageInner() {
   }, [searchParams])
 
   /* ─── Convex queries ─── */
-  const contentItems = useQuery(
-    api.content.list,
-    userId ? { userId } : 'skip',
-  )
+  const contentItems = useQuery(api.content.list, {})
   const graphEdges = useQuery(api.graphEdges.listEdgesForUser, {})
   const sessions = useQuery(api.canvas.listSessions)
   const activeSession = useQuery(
@@ -246,17 +242,30 @@ function CanvasPageInner() {
     }
   }, [generatedPostId, updatePostStatus])
 
-  /* ─── Refine post (silent background call) ─── */
+  /* ─── Refine post (silent background call with auth retry) ─── */
   const handleRefinePost = useCallback(async (instruction: string) => {
     if (!activeSessionId) return
+    const callAction = () => sendMessageAction({
+      sessionId: activeSessionId,
+      message: `Here is my current post:\n\n${generatedPost}\n\nPlease apply this change and return ONLY the updated post text, nothing else:\n${instruction}`,
+    })
     try {
-      const response = await sendMessageAction({
-        sessionId: activeSessionId,
-        message: `Here is my current post:\n\n${generatedPost}\n\nPlease apply this change and return ONLY the updated post text, nothing else:\n${instruction}`,
-      })
+      const response = await callAction()
       setGeneratedPost(response)
     } catch (e) {
-      throw new Error(parseError(e))
+      // Retry once on auth failure — token may have just refreshed
+      if (e instanceof Error && e.message.includes('Not authenticated')) {
+        try {
+          await new Promise(r => setTimeout(r, 1000))
+          const response = await callAction()
+          setGeneratedPost(response)
+          return
+        } catch { /* fall through to error below */ }
+      }
+      setChatMessages((prev) => [...prev, {
+        role: 'agent',
+        content: parseError(e),
+      }])
     }
   }, [activeSessionId, generatedPost, sendMessageAction])
 

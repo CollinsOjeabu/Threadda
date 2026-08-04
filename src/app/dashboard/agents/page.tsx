@@ -81,10 +81,7 @@ function StatusBadge({ status }: { status: string }) {
 export default function AgentsPage() {
   const { profile, isLoading: profileLoading } = useCurrentUser()
 
-  const allPosts = useQuery(
-    api.posts.list,
-    profile ? { userId: profile._id } : 'skip',
-  )
+  const allPosts = useQuery(api.posts.list, {})
   const updateStatus = useMutation(api.posts.updateStatus)
   const scheduleMut = useMutation(api.posts.schedule)
   const removePost = useMutation(api.posts.remove)
@@ -124,13 +121,28 @@ export default function AgentsPage() {
   const handleScheduleConfirm = async (postId: string) => {
     if (!scheduleDate) return
     const ts = new Date(scheduleDate).getTime()
-    if (ts <= Date.now()) { setToast('Pick a future date'); return }
-    await scheduleMut({ postId: postId as Id<"agentPosts">, scheduledAt: ts })
-    setSchedulingPostId(null)
-    setScheduleDate('')
-    const formatted = new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
-    setToast(`Scheduled for ${formatted} ✓`)
-    setTimeout(() => setToast(null), 3000)
+    if (isNaN(ts)) {
+      setToast('Invalid date. Please pick a valid date and time.')
+      setTimeout(() => setToast(null), 3000)
+      return
+    }
+    // Use a 1-minute buffer to account for clock skew instead of strict future check
+    if (ts < Date.now() - 60000) {
+      setToast('Pick a future date')
+      setTimeout(() => setToast(null), 3000)
+      return
+    }
+    try {
+      await scheduleMut({ postId: postId as Id<"agentPosts">, scheduledAt: ts })
+      setSchedulingPostId(null)
+      setScheduleDate('')
+      const formatted = new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+      setToast(`Scheduled for ${formatted} ✓`)
+      setTimeout(() => setToast(null), 3000)
+    } catch (e) {
+      setToast(`Failed to schedule: ${e instanceof Error ? e.message : 'Please try again.'}`)
+      setTimeout(() => setToast(null), 3000)
+    }
   }
 
   const handleRegenerate = async (postId: string) => {

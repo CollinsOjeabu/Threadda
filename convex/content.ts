@@ -8,7 +8,6 @@ import { ConvexError } from "convex/values"
  */
 export const list = query({
   args: {
-    userId: v.id("profiles"),
     type: v.optional(
       v.union(
         v.literal("article"),
@@ -48,13 +47,22 @@ export const list = query({
     }),
   ),
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) return []
+
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .unique()
+    if (!profile) return []
+
     const limit = args.limit ?? 50
 
     if (args.type) {
       return await ctx.db
         .query("contentItems")
         .withIndex("by_user_and_type", (q) =>
-          q.eq("userId", args.userId).eq("type", args.type!),
+          q.eq("userId", profile._id).eq("type", args.type!),
         )
         .order("desc")
         .take(limit)
@@ -62,7 +70,7 @@ export const list = query({
 
     return await ctx.db
       .query("contentItems")
-      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .withIndex("by_user", (q) => q.eq("userId", profile._id))
       .order("desc")
       .take(limit)
   },
@@ -102,7 +110,21 @@ export const get = query({
     v.null(),
   ),
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.id)
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) return null
+
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .unique()
+    if (!profile) return null
+
+    const item = await ctx.db.get(args.id)
+    // Return null (not a throw) on mismatch: a distinguishable error would be
+    // an existence oracle, revealing that an id exists but belongs elsewhere.
+    if (!item || item.userId !== profile._id) return null
+
+    return item
   },
 })
 
