@@ -29,6 +29,7 @@ export const getSessionForChat = internalQuery({
 export const getSourceTexts = internalQuery({
   args: {
     sourceIds: v.array(v.id("contentItems")),
+    profileId: v.id("profiles"),
   },
   handler: async (ctx, args) => {
     const parts: string[] = []
@@ -36,6 +37,10 @@ export const getSourceTexts = internalQuery({
     for (const id of args.sourceIds) {
       const item = await ctx.db.get(id)
       if (!item) continue
+      // Defence in depth behind the write-time assertOwnsSources checks.
+      // Filters rather than throws: sources can legitimately be deleted, and
+      // rows written before those checks existed may still hold foreign ids.
+      if (item.userId !== args.profileId) continue
 
       const title = item.title || "Untitled"
       const summary = item.summary || ""

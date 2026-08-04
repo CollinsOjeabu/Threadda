@@ -2,6 +2,7 @@ import { query, mutation } from "./_generated/server"
 import { v } from "convex/values"
 import { ConvexError } from "convex/values"
 import { gateMutation } from "./lib/rateLimit"
+import { assertOwnsSources } from "./lib/ownership"
 
 /**
  * Create a new canvas session with selected sources.
@@ -21,6 +22,10 @@ export const createSession = mutation({
       .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
       .unique()
     if (!profile) throw new ConvexError("Profile not found")
+
+    // Every attached source must belong to the caller. Checked before the
+    // rate-limit gate so a rejected request does not consume quota.
+    await assertOwnsSources(ctx, profile._id, args.sourceIds)
 
     // Rate-limit check: canvasSessions
     await gateMutation(ctx, profile._id, "canvasSessions")

@@ -136,16 +136,21 @@ function CanvasPageInner() {
       ?.filter((item) => selectedIds.some((id) => String(id) === String(item._id)))
       .map((item) => item.title) ?? []
 
-    const sessionId = await createSession({
-      name: `Session · ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
-      sourceIds: selectedIds,
-    })
+    try {
+      const sessionId = await createSession({
+        name: `Session · ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
+        sourceIds: selectedIds,
+      })
 
-    setActiveSessionId(sessionId)
-    setChatMessages([
-      { role: 'agent', content: `I've read all ${sourceNames.length} sources. Ready to synthesise — or click 💡 to break down the connections first.` },
-    ])
-    setCanvasState('session')
+      setActiveSessionId(sessionId)
+      setChatMessages([
+        { role: 'agent', content: `I've read all ${sourceNames.length} sources. Ready to synthesise — or click 💡 to break down the connections first.` },
+      ])
+      setCanvasState('session')
+    } catch (e) {
+      setChatMessages([{ role: 'agent', content: parseError(e) }])
+      setCanvasState('session')
+    }
   }, [selectedIds, createSession, contentItems])
 
   /* ─── Load recent session ─── */

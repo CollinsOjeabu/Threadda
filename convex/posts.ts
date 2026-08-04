@@ -1,6 +1,7 @@
 import { query, mutation } from "./_generated/server"
 import { v } from "convex/values"
 import { ConvexError } from "convex/values"
+import { assertOwnsSources } from "./lib/ownership"
 
 /* ── Shared return shape ── */
 const postShape = v.object({
@@ -223,6 +224,10 @@ export const create = mutation({
       .unique()
 
     if (!profile) throw new Error("Profile not found")
+
+    // Same check as canvas.createSession: regeneratePost later feeds these
+    // ids to getSourceTexts, so an unvalidated id here is a cross-tenant read.
+    await assertOwnsSources(ctx, profile._id, args.sourceContentIds)
 
     // Auto-approve drafts above 90% voice match when preference is enabled
     const autoApprove = profile.preferences?.auto === true

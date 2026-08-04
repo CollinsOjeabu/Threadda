@@ -141,12 +141,7 @@ export const generatePost = action({
     })
     if (!session) throw new ConvexError("Session not found or access denied")
 
-    // 2. Fetch source content texts
-    const sourceContext = await ctx.runQuery(internal.canvasChatHelpers.getSourceTexts, {
-      sourceIds: session.sourceIds,
-    })
-
-    // 3. Fetch user profile + parse voice DNA
+    // 2. Fetch user profile + parse voice DNA (also scopes the source read)
     const profile = await ctx.runQuery(internal.helpers.getProfileByClerkId, {
       clerkId: identity.subject,
     })
@@ -154,6 +149,12 @@ export const generatePost = action({
 
     const displayName = profile.name ?? "the user"
     const voice = parseVoiceProfile(profile)
+
+    // 3. Fetch source content texts
+    const sourceContext = await ctx.runQuery(internal.canvasChatHelpers.getSourceTexts, {
+      sourceIds: session.sourceIds,
+      profileId: profile._id,
+    })
 
     // 3a. Rate-limit check: generations
     await ctx.runMutation(internal.rateLimitHelpers.checkAndIncrementCounter, {
@@ -168,9 +169,6 @@ export const generatePost = action({
 
     // 5. Build source material block
     const sourceIds = session.sourceIds
-    const sourceItems = await Promise.all(
-      sourceIds.map((id) => ctx.runQuery(internal.canvasChatHelpers.getSourceTexts, { sourceIds: [id] }))
-    )
 
     // 6. Get recent chat history
     const chatHistory = session.chatHistory ?? []
@@ -288,6 +286,7 @@ export const regeneratePost = action({
     // 2. Fetch source content
     const sourceContext = await ctx.runQuery(internal.canvasChatHelpers.getSourceTexts, {
       sourceIds: existingPost.sourceContentIds,
+      profileId: profile._id,
     })
 
     // 3. Get voice profile

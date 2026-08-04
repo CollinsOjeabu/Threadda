@@ -26,17 +26,18 @@ export const sendMessage = action({
     })
     if (!session) throw new ConvexError("Session not found")
 
-    // 2. Get source content for context
-    const sourceContext = await ctx.runQuery(internal.canvasChatHelpers.getSourceTexts, {
-      sourceIds: session.sourceIds,
-    })
-
-    // 3. Get voice profile for persona context
+    // 2. Get voice profile for persona context (also scopes the source read)
     const profile = await ctx.runQuery(internal.helpers.getProfileByClerkId, {
       clerkId: identity.subject,
     })
     if (!profile) throw new ConvexError("Profile not found")
     const displayName = profile.name ?? "the user"
+
+    // 3. Get source content for context
+    const sourceContext = await ctx.runQuery(internal.canvasChatHelpers.getSourceTexts, {
+      sourceIds: session.sourceIds,
+      profileId: profile._id,
+    })
 
     // 3a. Rate-limit check: generations
     await ctx.runMutation(internal.rateLimitHelpers.checkAndIncrementCounter, {
