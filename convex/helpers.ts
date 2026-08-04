@@ -66,18 +66,6 @@ export const insertContentItem = internalMutation({
 })
 
 /**
- * Internal query to get item status (for ingestion polling).
- */
-export const getItemStatus = internalQuery({
-  args: { itemId: v.id("contentItems") },
-  handler: async (ctx, args) => {
-    const item = await ctx.db.get(args.itemId)
-    if (!item) return null
-    return { status: item.status, errorMessage: item.errorMessage }
-  },
-})
-
-/**
  * Internal query to get profile by Clerk ID.
  * Used by voiceDna and ingestion actions.
  */

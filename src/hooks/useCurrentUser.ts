@@ -1,18 +1,21 @@
 "use client"
 
 import { useUser } from "@clerk/nextjs"
-import { useQuery, useMutation, useConvexAuth } from "convex/react"
+import { useQuery, useConvexAuth } from "convex/react"
 import { api } from "../../convex/_generated/api"
-import { useEffect } from "react"
 
 /**
- * Hook that returns the current user's Convex profile,
- * auto-creating it from Clerk data on first visit.
+ * Hook that returns the current user's Convex profile.
  *
- * Returns: { profile, isLoading }
+ * The profile is created server-side by the Clerk `user.created` webhook
+ * (convex/http.ts → users.upsertFromClerk). Callers should treat a null
+ * profile as "not ready yet" and render a waiting state — this query is
+ * reactive and resolves as soon as the webhook lands.
+ *
+ * Returns: { profile, isLoading, clerkUser }
  */
 export function useCurrentUser() {
-  const { user: clerkUser, isLoaded: clerkLoaded } = useUser()
+  const { user: clerkUser } = useUser()
 
   // Gate on Convex's own auth state, not Clerk's. Clerk can be loaded while
   // the Convex client is still unauthenticated, and in that window getCurrent
@@ -21,20 +24,6 @@ export function useCurrentUser() {
 
   // Query Convex for the authenticated user's profile
   const profile = useQuery(api.users.getCurrent, isAuthenticated ? {} : "skip")
-
-  const ensureProfile = useMutation(api.users.ensureProfile)
-
-  // Auto-create profile if Clerk user exists but Convex profile doesn't
-  useEffect(() => {
-    if (clerkLoaded && clerkUser && profile === null) {
-      ensureProfile({
-        clerkId: clerkUser.id,
-        email: clerkUser.primaryEmailAddress?.emailAddress ?? "",
-        name: clerkUser.fullName ?? clerkUser.firstName ?? undefined,
-        avatarUrl: clerkUser.imageUrl ?? undefined,
-      })
-    }
-  }, [clerkLoaded, clerkUser, profile, ensureProfile])
 
   return {
     profile: profile ?? null,
