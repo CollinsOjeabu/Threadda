@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server'
 const isProtected   = createRouteMatcher(['/dashboard(.*)'])
 const isOnboarding  = createRouteMatcher(['/onboarding'])
 const isAuthRoute   = createRouteMatcher(['/sign-in(.*)', '/sign-up(.*)'])
+const isLanding     = createRouteMatcher(['/'])
 
 export default clerkMiddleware(async (auth, req) => {
   const { userId } = await auth()
@@ -26,8 +27,11 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.redirect(new URL('/dashboard', req.url))
   }
 
+  // Authenticated + public landing → app home (the dashboard rule above then
+  // sends not-yet-onboarded users on to /onboarding). Signed-out visitors
+  // fall through and see the marketing page.
   // Authenticated + auth routes → /dashboard
-  if (userId && isAuthRoute(req)) {
+  if (userId && (isLanding(req) || isAuthRoute(req))) {
     return NextResponse.redirect(new URL('/dashboard', req.url))
   }
 })

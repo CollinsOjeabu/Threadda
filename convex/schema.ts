@@ -153,4 +153,12 @@ export default defineSchema({
     .index("by_user_and_status", ["userId", "status"])
     .index("by_user_and_agent", ["userId", "agent"])
     .index("by_scheduled_at", ["scheduledAt"]),
+
+  // Public landing-page early-access list. Written only by waitlist.join.
+  waitlist: defineTable({
+    email: v.string(), // trimmed + lowercased
+    platform: v.union(v.literal("linkedin"), v.literal("x"), v.literal("both")),
+    createdAt: v.number(),
+    source: v.literal("landing"),
+  }).index("by_email", ["email"]),
 })

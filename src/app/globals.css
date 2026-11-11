@@ -50,6 +50,30 @@
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ─── Marketing landing palette (lp- namespace; used only under app/(marketing)) ─── */
+  --color-lp-cream: #f7f7f2;
+  --color-lp-paper: #fdfdfc;
+  --color-lp-panel: #f1f0e9;
+  --color-lp-ink: #21232c;
+  --color-lp-muted: #6b6d76;
+  --color-lp-body: #54565f;
+  --color-lp-blue: #3750f1;
+  --color-lp-blue-700: #2b41d8;
+  --color-lp-lime: #e5eba3;
+  --color-lp-navy: #1b2031;
+  --color-lp-navy-card: #242a3b;
+  --color-lp-navy-line: #333a4d;
+  --color-lp-line: rgba(33, 35, 44, 0.10);
+  --color-lp-line-2: #e4e3dc;
+}
+
+/* Marketing fonts: the source variables are set on .lp-root by app/(marketing)/layout.tsx,
+   so these are inlined into utilities and resolve only inside that subtree. */
+@theme inline {
+  --font-lp-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-lp-serif: var(--font-instrument-serif), Georgia, serif;
+  --font-lp-mono: var(--font-plex-mono), ui-monospace, monospace;
 }
 
 /* ── Base ── */
