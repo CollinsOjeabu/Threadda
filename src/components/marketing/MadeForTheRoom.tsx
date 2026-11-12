@@ -87,9 +87,9 @@ export function MadeForTheRoom() {
               <p>A study of 4,300 reviews just explained why. Managers cited work they could recall 2.4× more often than work of equal value they couldn&apos;t. I had optimised for correctness in a system that rewards memory.</p>
               <p>So I stopped trying to be indispensable and started making the work retellable. The uncomfortable part: it worked.</p>
             </div>
-            <div className="mt-[0.9375rem] flex items-center justify-between gap-[0.625rem] whitespace-nowrap border-t border-[#f0f0f0] pt-[0.875rem] font-lp-mono text-[0.625rem] leading-[0.8125rem] text-lp-muted">
-              <span className="flex gap-[0.625rem] sm:gap-[1rem]"><span>248 reactions</span><span>31 comments</span></span>
-              <span>1,180 characters</span>
+            <div className="mt-[0.9375rem] flex flex-wrap items-center justify-between gap-[0.625rem] border-t border-[#f0f0f0] pt-[0.875rem] font-lp-mono text-[0.625rem] leading-[0.8125rem] text-lp-muted">
+              <span className="flex gap-[0.625rem] whitespace-nowrap sm:gap-[1rem]"><span>248 reactions</span><span>31 comments</span></span>
+              <span className="whitespace-nowrap">1,180 characters</span>
             </div>
           </div>
         </Panel>

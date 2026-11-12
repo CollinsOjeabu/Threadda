@@ -13,8 +13,11 @@ import { useEffect } from "react"
 export function LandingMotion() {
   useEffect(() => {
     const root = document.documentElement
-    ;(window as unknown as { __lpMotion?: boolean }).__lpMotion = true
-    root.classList.add("lp-js")
+    const w = window as unknown as { __lpMotion?: boolean; __lpMotionOff?: boolean }
+    w.__lpMotion = true
+    // Booted after the inline 4s fallback already revealed everything: don't
+    // re-hide it. Reveals below then only add classes that have no effect.
+    if (!w.__lpMotionOff) root.classList.add("lp-js")
 
     // Index staggered children and heading lines.
     document.querySelectorAll<HTMLElement>("[data-stagger]").forEach((group) => {
