@@ -1,3 +1,5 @@
+import { Line } from "./Line"
+
 const PROBLEMS = [
   {
     title: "You read well and publish rarely.",
@@ -15,24 +17,25 @@ const PROBLEMS = [
 
 export function FamiliarFeeling() {
   return (
-    <section aria-labelledby="feeling-heading" className="py-32">
+    <section aria-labelledby="feeling-heading" className="py-32 xl:py-36">
       <div className="grid lg:grid-cols-2 gap-14 lg:gap-24">
-        <div>
-          <p className="lp-overline flex items-center gap-3"><span className="num text-lp-muted">(01)</span><span className="rule" aria-hidden="true" />A familiar feeling</p>
-          <h2 id="feeling-heading" className="h-display text-[clamp(2.6rem,6vw,4.4rem)] mt-7 leading-[1.02]">
-            You&apos;re full of ideas.<br />Your feed is <span className="serif-i text-lp-blue">another story.</span>
+        <div data-stagger>
+          <p data-reveal="fade" className="lp-overline flex items-center gap-3"><span className="num text-lp-muted">(01)</span><span className="rule" aria-hidden="true" />A familiar feeling</p>
+          <h2 id="feeling-heading" data-reveal="lines" className="h-display text-[clamp(2.6rem,6vw,4.4rem)] mt-7 leading-[1.02]">
+            <Line>You&apos;re full of ideas.</Line>
+            <Line>Your feed is <span className="serif-i text-lp-blue">another story.</span></Line>
           </h2>
-          <p className="mt-7 text-[15px] leading-[1.65] text-lp-body max-w-[25rem]">
+          <p data-reveal className="mt-7 text-[0.9375rem] leading-[1.65] text-lp-body max-w-[25rem]">
             Posting isn&apos;t a writing problem. It&apos;s a figuring-out-what-to-say problem. Threadda closes the distance between reading something good and saying something about it.
           </p>
         </div>
-        <div className="space-y-9 lg:pt-10">
+        <div data-stagger className="space-y-9 lg:pt-10">
           {PROBLEMS.map((p, i) => (
-            <div key={p.title} className="border-t border-lp-line-2 pt-6 flex gap-5">
+            <div key={p.title} data-reveal className="lp-topline pt-6 flex gap-5">
               <span className="num text-lp-blue pt-1">{String(i + 1).padStart(2, "0")}</span>
               <div>
-                <h3 className="h-display text-[19px] font-semibold">{p.title}</h3>
-                <p className="mt-2.5 text-[14px] leading-[1.6] text-lp-body">{p.body}</p>
+                <h3 className="h-display text-[1.1875rem] font-semibold">{p.title}</h3>
+                <p className="mt-2.5 text-[0.875rem] leading-[1.6] text-lp-body">{p.body}</p>
               </div>
             </div>
           ))}

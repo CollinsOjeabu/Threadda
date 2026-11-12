@@ -27,19 +27,19 @@
     font-family: var(--font-plex-mono), monospace;
     text-transform: uppercase;
     letter-spacing: 0.16em;
-    font-size: 10px;
+    font-size: 0.6875rem; /* 11px at 1x */
     line-height: 1.4;
     color: #6b6d76;
   }
 
   .lp-root .num {
     font-family: var(--font-plex-mono), monospace;
-    font-size: 10px;
+    font-size: 0.6875rem;
     letter-spacing: 0.08em;
   }
 
   .lp-root .rule {
-    width: 34px;
+    width: 2.125rem;
     height: 1px;
     background: #c9c8c0;
     display: inline-block;
@@ -64,7 +64,14 @@ body:has(.lp-root) {
 
 html:has(.lp-root) {
   scroll-behavior: smooth;
-  scroll-padding-top: 76px; /* sticky nav height + breathing room */
+  scroll-padding-top: 4.75rem; /* sticky nav height + breathing room */
+}
+
+/* Page-wide scale. Every landing-page size is in rem, so this one value sizes the whole page:
+   1x (16px) up to 1280px wide, then growing smoothly to 1.25x (20px) at 1920px and capped there.
+   Media queries are unaffected (they use the browser's default rem). */
+html:has(.lp-root) {
+  font-size: clamp(1rem, 1rem + (100vw - 80rem) * 0.00625, 1.25rem);
 }
 @media (prefers-reduced-motion: reduce) {
   html:has(.lp-root) {
@@ -86,4 +93,349 @@ html:has(.lp-root) {
 .lp-root ::selection {
   background-color: rgba(55, 80, 241, 0.18);
   color: #21232c;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   Motion. Driven by components/marketing/LandingMotion.tsx.
+   Entrances only run when <html> has .lp-js (set before first paint) and the visitor
+   has not asked for reduced motion; otherwise everything is simply visible.
+   Only opacity, transforms, and stroke/background offsets animate.
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+.lp-root {
+  --lp-ease: cubic-bezier(0.22, 1, 0.36, 1); /* long, soft landing: entrances */
+  --lp-ease-io: cubic-bezier(0.65, 0, 0.35, 1); /* even in/out: draws */
+  --lp-snap: cubic-bezier(0.34, 1.56, 0.64, 1); /* slight overshoot: small pops */
+}
+
+/* Reading-progress thread under the nav */
+.lp-root [data-lp-progress] {
+  transform: scaleX(0);
+  transform-origin: left;
+  will-change: transform;
+}
+.lp-root [data-lp-header] {
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+.lp-root [data-lp-header][data-scrolled] {
+  background-color: rgba(247, 247, 242, 0.92);
+  box-shadow: 0 0.375rem 1.5rem -1rem rgba(33, 35, 44, 0.25);
+}
+
+/* Nav links: underline that draws in on hover and for the section you are in */
+.lp-root .lp-navlink {
+  position: relative;
+  transition: color 0.2s ease;
+}
+.lp-root .lp-navlink::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.375rem;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.45s var(--lp-ease);
+}
+.lp-root .lp-navlink:hover::after,
+.lp-root .lp-navlink[data-active]::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+.lp-root .lp-navlink[data-active] {
+  color: #21232c;
+}
+
+/* Heading lines rise out of a mask. Padding + matching negative margin keeps descenders and
+   italic overhang inside the clip without changing layout. */
+.lp-root .lp-line {
+  display: block;
+  overflow: clip;
+  padding: 0.08em 0.14em 0.16em;
+  margin: -0.08em -0.14em -0.16em;
+}
+.lp-root .lp-line > span {
+  display: block;
+}
+
+/* Strike-through drawn as a background so it can animate (wrapped lines strike together) */
+.lp-root .lp-strike {
+  background: linear-gradient(currentColor, currentColor) no-repeat 0 58% / 100% 1px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* Small hover moves (arrows, presses, lifts) */
+.lp-root .lp-hover .lp-nudge-ne,
+.lp-root .lp-hover .lp-nudge-se,
+.lp-root .lp-hover .lp-nudge-up,
+.lp-root .lp-hover .lp-nudge-down,
+.lp-root .lp-hover .lp-turn {
+  display: inline-block;
+  transition: transform 0.35s var(--lp-ease);
+}
+.lp-root .lp-press {
+  transition-property: color, background-color, border-color, box-shadow, transform;
+  transition-duration: 0.2s;
+  transition-timing-function: ease;
+}
+.lp-root .lp-lift {
+  transition: transform 0.45s var(--lp-ease), box-shadow 0.45s var(--lp-ease);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .lp-root .lp-hover:hover .lp-nudge-ne,
+  .lp-root .lp-hover:focus-visible .lp-nudge-ne { transform: translate(0.14em, -0.14em); }
+  .lp-root .lp-hover:hover .lp-nudge-se,
+  .lp-root .lp-hover:focus-visible .lp-nudge-se { transform: translate(0.14em, 0.14em); }
+  .lp-root .lp-hover:hover .lp-nudge-up,
+  .lp-root .lp-hover:focus-visible .lp-nudge-up { transform: translateY(-0.2em); }
+  .lp-root .lp-hover:hover .lp-nudge-down,
+  .lp-root .lp-hover:focus-visible .lp-nudge-down { transform: translateY(0.2em); }
+  .lp-root .lp-hover:hover .lp-turn,
+  .lp-root .lp-hover:focus-visible .lp-turn { transform: rotate(45deg); }
+  .lp-root .lp-press:active:not(:disabled) { transform: scale(0.97); }
+  .lp-root .lp-lift:hover {
+    transform: translateY(-0.3125rem);
+    box-shadow: 0 1.25rem 2.5rem -1.5rem rgba(33, 35, 44, 0.28);
+  }
+
+  /* Logo mark: the four strands ripple on hover */
+  .lp-root .lp-hover:hover .lp-mark path { animation: lp-strand 0.9s var(--lp-ease-io); }
+  .lp-root .lp-hover:hover .lp-mark path:nth-of-type(2) { animation-delay: 0.06s; }
+  .lp-root .lp-hover:hover .lp-mark path:nth-of-type(3) { animation-delay: 0.12s; }
+  .lp-root .lp-hover:hover .lp-mark path:nth-of-type(4) { animation-delay: 0.18s; }
+
+  /* Waveform glyph breathes gently */
+  .lp-root .lp-wave rect {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: lp-wave 1.6s ease-in-out infinite;
+  }
+  .lp-root .lp-wave rect:nth-child(2) { animation-delay: -0.2s; }
+  .lp-root .lp-wave rect:nth-child(3) { animation-delay: -0.45s; }
+  .lp-root .lp-wave rect:nth-child(4) { animation-delay: -0.7s; }
+  .lp-root .lp-wave rect:nth-child(5) { animation-delay: -0.95s; }
+  .lp-root .lp-wave rect:nth-child(6) { animation-delay: -1.2s; }
+  .lp-root .lp-wave rect:nth-child(7) { animation-delay: -1.4s; }
+
+  /* The arrow beside the form points at it, softly */
+  .lp-root .lp-point { animation: lp-point 2.6s var(--lp-ease-io) infinite; }
+
+  /* Workbench demo: swapped content settles in */
+  .lp-root .lp-swap { animation: lp-swap 0.45s var(--lp-ease) both; }
+
+  /* FAQ: answers open smoothly where the browser can animate to auto height */
+  .lp-root { interpolate-size: allow-keywords; }
+  .lp-root details::details-content {
+    block-size: 0;
+    overflow: clip;
+    transition: block-size 0.45s var(--lp-ease), content-visibility 0.45s allow-discrete;
+  }
+  .lp-root details[open]::details-content { block-size: auto; }
+  .lp-root details > p { transition: opacity 0.4s ease 0.05s, translate 0.45s var(--lp-ease); }
+  .lp-root details:not([open]) > p { opacity: 0; translate: 0 -0.375rem; }
+
+  /* ── Scroll entrances ─────────────────────────────────────────────────────── */
+  html.lp-js .lp-root [data-reveal] {
+    opacity: 0;
+    transform: translate3d(0, 1.75rem, 0);
+    transition: opacity 0.8s var(--lp-ease), transform 1s var(--lp-ease);
+    transition-delay: calc(var(--i, 0) * 90ms + var(--d, 0ms));
+  }
+  html.lp-js .lp-root [data-reveal="fade"] { transform: none; }
+  html.lp-js .lp-root [data-reveal="scale"] { transform: translate3d(0, 2.5rem, 0) scale(0.97); }
+  html.lp-js .lp-root [data-reveal="left"] { transform: translate3d(-2.5rem, 0, 0); }
+  html.lp-js .lp-root [data-reveal="right"] { transform: translate3d(2.5rem, 0, 0); }
+  html.lp-js .lp-root [data-reveal="lines"],
+  html.lp-js .lp-root [data-reveal="trigger"] { opacity: 1; transform: none; }
+  html.lp-js .lp-root [data-reveal].is-in { opacity: 1; transform: none; }
+  html.lp-js .lp-root [data-reveal].is-done { transition-delay: 0s; }
+  /* Once settled, revealed cards hand transform back to their hover lift */
+  html.lp-js .lp-root [data-reveal].is-done.lp-lift {
+    transition: transform 0.45s var(--lp-ease), box-shadow 0.45s var(--lp-ease);
+  }
+  html.lp-js .lp-root [data-reveal].is-done.lp-lift:hover { transform: translateY(-0.3125rem); }
+
+  /* Masked heading lines */
+  html.lp-js .lp-root [data-reveal] .lp-line > span {
+    transform: translate3d(0, 110%, 0);
+    transition: transform 1.1s var(--lp-ease);
+    transition-delay: calc(var(--l, 0) * 110ms + var(--i, 0) * 90ms + var(--d, 0ms));
+  }
+  html.lp-js .lp-root [data-reveal].is-in .lp-line > span { transform: none; }
+
+  /* Overline rules: every section's little thread draws itself in */
+  html.lp-js .lp-root [data-reveal] .rule {
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.9s var(--lp-ease-io) calc(var(--d, 0ms) + 0.15s);
+  }
+  html.lp-js .lp-root [data-reveal].is-in .rule { transform: none; }
+
+  /* Hairlines that draw left to right (list dividers) */
+  html.lp-js .lp-root [data-reveal] .lp-draw {
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 1.1s var(--lp-ease-io);
+    transition-delay: calc(var(--i, 0) * 90ms + var(--d, 0ms));
+  }
+  html.lp-js .lp-root [data-reveal].is-in .lp-draw { transform: none; }
+
+  /* Bars that fill (voiceprint) */
+  html.lp-js .lp-root [data-reveal] .lp-bar {
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 1.4s var(--lp-ease);
+    transition-delay: calc(var(--b, 0) * 120ms + 0.35s);
+  }
+  html.lp-js .lp-root [data-reveal].is-in .lp-bar { transform: none; }
+
+  /* Children that follow their parent in, one after another (--f = order) */
+  html.lp-js .lp-root [data-reveal] .lp-follow {
+    opacity: 0;
+    transform: translate3d(0, 0.75rem, 0);
+    transition: opacity 0.6s ease, transform 0.8s var(--lp-ease);
+    transition-delay: calc(var(--f, 0) * 110ms + var(--i, 0) * 90ms + 0.35s);
+  }
+  html.lp-js .lp-root [data-reveal].is-in .lp-follow { opacity: 1; transform: none; }
+
+  /* Small pops (dots) */
+  html.lp-js .lp-root [data-reveal] .lp-pop {
+    transform: scale(0);
+    transition: transform 0.6s var(--lp-snap) calc(var(--d, 0ms) + 0.6s);
+  }
+  html.lp-js .lp-root [data-reveal].is-in .lp-pop { transform: none; }
+
+  /* Strike-through draws across the generic copy */
+  html.lp-js .lp-root [data-reveal] .lp-strike {
+    background-size: 0% 1px;
+    transition: background-size 1.2s var(--lp-ease-io) 0.9s;
+  }
+  html.lp-js .lp-root [data-reveal].is-in .lp-strike { background-size: 100% 1px; }
+
+  /* Voice cards: the generic one settles back, yours swings forward into place */
+  html.lp-js .lp-root [data-reveal] .lp-card-back {
+    opacity: 0;
+    translate: 0 1.5rem;
+    rotate: 0deg;
+    transition: opacity 0.8s ease, translate 1s var(--lp-ease), rotate 1.1s var(--lp-ease);
+  }
+  html.lp-js .lp-root [data-reveal] .lp-card-front {
+    opacity: 0;
+    translate: 0 3rem;
+    rotate: 7deg;
+    transition: opacity 0.8s ease 0.2s, translate 1.2s var(--lp-ease) 0.2s, rotate 1.3s var(--lp-ease) 0.2s;
+  }
+  html.lp-js .lp-root [data-reveal].is-in .lp-card-back { opacity: 1; translate: 0 0; rotate: -3.8deg; }
+  html.lp-js .lp-root [data-reveal].is-in .lp-card-front { opacity: 1; translate: 0 0; rotate: 2deg; }
+
+  /* Hairline threads draw across the blue statement band */
+  html.lp-js .lp-root [data-reveal] .lp-thread {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 2.6s var(--lp-ease-io) 0.2s;
+  }
+  html.lp-js .lp-root [data-reveal] .lp-thread + .lp-thread { transition-delay: 0.6s; }
+  html.lp-js .lp-root [data-reveal].is-in .lp-thread { stroke-dashoffset: 0; }
+}
+
+@keyframes lp-strand {
+  0%, 100% { transform: translateX(0); }
+  40% { transform: translateX(2.5px); }
+  70% { transform: translateX(-1px); }
+}
+@keyframes lp-wave {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.55); }
+}
+@keyframes lp-point {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(0.3rem, 0.3rem); }
+}
+@keyframes lp-swap {
+  from { opacity: 0; transform: translateY(0.375rem); }
+  to { opacity: 1; transform: none; }
+}
+.lp-root [data-lp-progress] {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: #3750f1;
+}
+
+/* Tight-leading display type (footer wordmark) needs a roomier mask */
+.lp-root .lp-line.lp-line-loose {
+  padding-block: 0.2em;
+  margin-block: -0.2em;
+}
+
+/* List dividers drawn as a pseudo-element so they can draw in */
+.lp-root .lp-topline {
+  position: relative;
+}
+.lp-root .lp-topline::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: #e4e3dc;
+  transform-origin: left;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html.lp-js .lp-root [data-reveal].lp-topline::before {
+    transform: scaleX(0);
+    transition: transform 1.2s var(--lp-ease-io);
+    transition-delay: calc(var(--i, 0) * 90ms);
+  }
+  html.lp-js .lp-root [data-reveal].lp-topline.is-in::before { transform: none; }
+  html.lp-js .lp-root [data-reveal]:not(.is-in) .lp-line.lp-line-loose > span { transform: translate3d(0, 120%, 0); }
+}
+
+/* FAQ question warms to blue on hover */
+.lp-root details > summary h3 {
+  transition: color 0.2s ease;
+}
+.lp-root details > summary:hover h3 {
+  color: #3750f1;
+}
+
+/* Hero intro: plays from first paint in pure CSS (no wait for JS), same choreography as the reveals */
+@media (prefers-reduced-motion: no-preference) {
+  html.lp-js .lp-root [data-intro] {
+    animation: lp-intro-rise 1s var(--lp-ease) both;
+    animation-delay: var(--d, 0ms);
+  }
+  html.lp-js .lp-root [data-intro="fade"] { animation-name: lp-intro-fade; }
+  html.lp-js .lp-root [data-intro="lines"] { animation: none; }
+  html.lp-js .lp-root [data-intro] .lp-line > span {
+    animation: lp-intro-line 1.15s var(--lp-ease) both;
+    animation-delay: calc(var(--l, 0) * 120ms + var(--d, 0ms));
+  }
+  html.lp-js .lp-root [data-intro] .rule {
+    transform-origin: left;
+    animation: lp-intro-draw 0.9s var(--lp-ease-io) 0.1s both;
+  }
+}
+@keyframes lp-intro-rise {
+  from { opacity: 0; transform: translate3d(0, 1.75rem, 0); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes lp-intro-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes lp-intro-line {
+  from { transform: translate3d(0, 110%, 0); }
+  to { transform: none; }
+}
+@keyframes lp-intro-draw {
+  from { transform: scaleX(0); }
+  to { transform: none; }
 }

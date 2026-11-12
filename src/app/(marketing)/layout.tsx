@@ -53,6 +53,14 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
     <div
       className={`lp-root min-h-screen ${manrope.variable} ${instrumentSerif.variable} ${plexMono.variable}`}
     >
+      {/* Marks JS as available before first paint so scroll entrances start hidden, not flashed.
+          If the motion script never boots, the class is removed again and everything shows. */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html:
+            "document.documentElement.classList.add('lp-js');setTimeout(function(){if(!window.__lpMotion)document.documentElement.classList.remove('lp-js')},4000)",
+        }}
+      />
       {children}
     </div>
   )

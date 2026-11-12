@@ -28,27 +28,28 @@ const FAQS = [
 /** Native <details> accordion — no client JS. */
 export function Faq() {
   return (
-    <section id="faq" aria-labelledby="faq-heading" className="py-32">
+    <section id="faq" aria-labelledby="faq-heading" className="py-32 xl:py-36">
       <div className="grid lg:grid-cols-[1fr_1.4fr] gap-14">
-        <div>
-          <p className="lp-overline flex items-center gap-3"><span className="num text-lp-muted">(06)</span><span className="rule" aria-hidden="true" />A few good questions</p>
-          <h2 id="faq-heading" className="h-display text-[clamp(2.2rem,5vw,3.6rem)] mt-6 leading-[1.05]">
+        <div data-stagger>
+          <p data-reveal="fade" className="lp-overline flex items-center gap-3"><span className="num text-lp-muted">(06)</span><span className="rule" aria-hidden="true" />A few good questions</p>
+          <h2 id="faq-heading" data-reveal className="h-display text-[clamp(2.2rem,5vw,3.6rem)] mt-6 leading-[1.05]">
             Before you <span className="serif-i text-lp-blue">follow the thread.</span>
           </h2>
-          <p className="mt-4 text-[14px] text-lp-body">Everything people ask before they join.</p>
+          <p data-reveal className="mt-4 text-[0.875rem] text-lp-body">Everything people ask before they join.</p>
         </div>
-        <div>
+        <div data-stagger>
           {FAQS.map((item, i) => (
             <details
               key={item.q}
               open={i === 0}
+              data-reveal
               className={`group border-t border-lp-line-2 py-5 ${i === FAQS.length - 1 ? "border-b" : ""}`}
             >
               <summary className="flex items-center justify-between gap-4 rounded-md">
-                <h3 className="text-[15px] font-semibold">{item.q}</h3>
+                <h3 className="text-[0.9375rem] font-semibold">{item.q}</h3>
                 <span aria-hidden="true" className="text-lp-blue text-xl transition group-open:rotate-45">+</span>
               </summary>
-              <p className="mt-3 text-[14px] leading-[1.6] text-lp-body">{item.a}</p>
+              <p className="mt-3 max-w-[34rem] text-[0.875rem] leading-[1.6] text-lp-body">{item.a}</p>
             </details>
           ))}
         </div>

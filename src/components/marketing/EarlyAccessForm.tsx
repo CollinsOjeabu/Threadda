@@ -50,13 +50,13 @@ export function EarlyAccessForm() {
     }
   }
 
-  const card = "rounded-[18px] bg-lp-paper border border-lp-ink/10 p-7 shadow-sm"
+  const card = "rounded-[0.875rem] border border-[#e6e6e6] bg-lp-paper px-[1.25rem] pt-[2.25rem] pb-[2.3125rem] sm:px-[2.25rem]"
 
   if (status === "success") {
     return (
-      <div className={card} role="status" aria-live="polite">
-        <h3 className="h-display text-[20px] font-semibold">You&apos;re on the list — we&apos;ll write once when your wave opens.</h3>
-        <p className="mt-3 num text-lp-muted">No credit card. Nothing to install.</p>
+      <div className={`${card} lp-swap`} role="status" aria-live="polite">
+        <h3 className="h-display text-[1.25rem] leading-[1.75rem] tracking-[-0.03em]">You&apos;re on the list — we&apos;ll write once when your wave opens.</h3>
+        <p className="mt-3 text-[0.6875rem] text-lp-muted">No credit card. Nothing to install.</p>
       </div>
     )
   }
@@ -65,10 +65,10 @@ export function EarlyAccessForm() {
 
   return (
     <form className={`${card} relative`} onSubmit={onSubmit} noValidate>
-      <h3 className="h-display text-[20px] font-semibold">Get in on the good stuff.</h3>
-      <p className="text-[13px] text-lp-body mt-1 mb-5">Small waves. Thoughtful product. You, first.</p>
+      <h3 className="h-display text-[1.25rem] leading-[1.75rem] tracking-[-0.03em]">Get in on the good stuff.</h3>
+      <p className="mt-[0.75rem] text-[0.8125rem] leading-[1rem] text-lp-muted">Small waves. Thoughtful product. You, first.</p>
 
-      <label htmlFor="ea-email" className="text-[13px] font-medium text-lp-ink">Work email</label>
+      <label htmlFor="ea-email" className="mt-[2rem] block text-[0.75rem] leading-[0.9375rem] font-medium text-lp-ink">Work email</label>
       <input
         id="ea-email"
         name="email"
@@ -81,11 +81,11 @@ export function EarlyAccessForm() {
         onChange={(e) => setEmail(e.target.value)}
         aria-invalid={status === "error" ? true : undefined}
         aria-describedby={error ? "ea-error" : undefined}
-        className="mt-2 w-full rounded-[10px] border border-lp-line-2 bg-white px-4 py-3 text-[14px] text-lp-ink placeholder:text-lp-muted/70 outline-none focus:border-lp-blue"
+        className="mt-[0.625rem] h-[3rem] w-full rounded-[0.625rem] border border-[#d3d1ca] bg-[#f7f7f2] px-[1rem] text-[1rem] sm:text-[0.8125rem] text-lp-ink placeholder:text-[#a8a7ab] outline-none transition-colors focus:border-lp-blue focus:bg-lp-paper"
       />
 
       {/* Honeypot: hidden from people and assistive tech; bots tend to fill it. */}
-      <div aria-hidden="true" className="absolute -left-[10000px] top-auto w-px h-px overflow-hidden">
+      <div aria-hidden="true" className="absolute -left-[625rem] top-auto w-px h-px overflow-hidden">
         <label htmlFor="ea-website">Website</label>
         <input
           id="ea-website"
@@ -98,8 +98,8 @@ export function EarlyAccessForm() {
         />
       </div>
 
-      <p id="ea-platform-label" className="text-[13px] font-medium text-lp-ink mt-5">I publish on</p>
-      <div role="group" aria-labelledby="ea-platform-label" className="mt-2 grid grid-cols-3 gap-2 text-[13px]">
+      <p id="ea-platform-label" className="mt-[1.25rem] text-[0.75rem] leading-[0.9375rem] font-medium text-lp-ink">I publish on</p>
+      <div role="group" aria-labelledby="ea-platform-label" className="mt-[0.5625rem] grid grid-cols-3 gap-[0.625rem] text-[0.8125rem] sm:gap-[0.8125rem]">
         {PLATFORMS.map((p) => {
           const active = platform === p.value
           return (
@@ -108,10 +108,10 @@ export function EarlyAccessForm() {
               type="button"
               aria-pressed={active}
               onClick={() => setPlatform(p.value)}
-              className={`cursor-pointer rounded-[10px] border py-2.5 transition ${
+              className={`lp-press h-[2.5rem] cursor-pointer rounded-[0.625rem] border ${
                 active
-                  ? "border-lp-blue bg-lp-blue/5 text-lp-blue"
-                  : "border-lp-line-2 text-lp-ink hover:border-lp-ink/30"
+                  ? "border-[#5a6ff2] bg-[#f1f3fb] text-lp-blue"
+                  : "border-[#dad9d3] text-lp-body hover:border-lp-ink/30"
               }`}
             >
               {p.label}
@@ -123,15 +123,16 @@ export function EarlyAccessForm() {
       <button
         type="submit"
         disabled={submitting}
-        className="mt-5 w-full cursor-pointer rounded-full bg-lp-blue hover:bg-lp-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition text-white py-3.5 text-[14px] font-semibold flex items-center justify-center gap-2"
+        className="lp-hover lp-press mt-[1.5rem] flex h-[3rem] w-full cursor-pointer items-center justify-between rounded-[0.625rem] bg-lp-blue px-[1.25rem] text-[0.8125rem] font-semibold text-white hover:bg-lp-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {submitting ? "Joining…" : "Request early access ↗"}
+        {submitting ? "Joining…" : "Request early access"}
+        <svg aria-hidden="true" viewBox="0 0 10 10" className="lp-nudge-ne h-[0.5625rem] w-[0.5625rem]" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d="M2 8 8 2M3.5 2H8v4.5" /></svg>
       </button>
 
-      <p id="ea-error" role="alert" className="mt-3 text-center text-[13px] text-[#b42318] empty:hidden">
+      <p id="ea-error" role="alert" className="mt-3 text-center text-[0.8125rem] text-[#b42318] empty:hidden">
         {error}
       </p>
-      <p className="mt-3 text-center num text-lp-muted">No credit card. Nothing to install.</p>
+      <p className="mt-[1rem] text-center text-[0.6875rem] leading-[0.875rem] text-lp-muted">No credit card. Nothing to install.</p>
     </form>
   )
 }

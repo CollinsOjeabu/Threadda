@@ -11,15 +11,16 @@ import { WhoItsFor } from "@/components/marketing/WhoItsFor"
 import { Faq } from "@/components/marketing/Faq"
 import { EarlyAccess } from "@/components/marketing/EarlyAccess"
 import { Footer } from "@/components/marketing/Footer"
+import { LandingMotion } from "@/components/marketing/LandingMotion"
 
-const container = "mx-auto max-w-[1320px] px-6 sm:px-10"
+const container = "mx-auto max-w-[80.4375rem] px-6 sm:px-10"
 
 export default function LandingPage() {
   return (
     <>
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-full focus:bg-lp-ink focus:px-4 focus:py-2 focus:text-[13px] focus:text-lp-cream"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-full focus:bg-lp-ink focus:px-4 focus:py-2 focus:text-[0.8125rem] focus:text-lp-cream"
       >
         Skip to content
       </a>
@@ -46,6 +47,7 @@ export default function LandingPage() {
         <EarlyAccess />
       </main>
       <Footer />
+      <LandingMotion />
     </>
   )
 }
