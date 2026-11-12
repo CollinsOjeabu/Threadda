@@ -1,7 +1,7 @@
 import { internalQuery } from "./_generated/server"
 import { v } from "convex/values"
 import type { Id } from "./_generated/dataModel"
-import { joinSources, wrapSource } from "./lib/untrusted"
+import { countFittingSources, joinSources, wrapSource } from "./lib/untrusted"
 
 /**
  * Get session data for the chat action (internal only).
@@ -62,9 +62,15 @@ export const getSourceTexts = internalQuery({
       )
     }
 
+    // blocks and liveSourceIds are pushed in step, so the blocks that fit are
+    // a prefix and their ids are the same-length prefix of liveSourceIds.
+    const includedCount = countFittingSources(blocks)
     return {
       context: joinSources(blocks) || "No source content available.",
+      // Every source that still exists (for the "all deleted" check).
       liveSourceIds,
+      // Only the sources whose text actually reached the prompt.
+      includedSourceIds: liveSourceIds.slice(0, includedCount),
     }
   },
 })

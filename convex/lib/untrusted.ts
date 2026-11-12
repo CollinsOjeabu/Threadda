@@ -40,16 +40,21 @@ export function wrapSource(
 }
 
 /**
- * Join wrapped sources, dropping whole blocks once the total cap is reached so
- * no block is cut mid-way (a cut block would lose its closing tag).
+ * How many leading blocks fit under the total cap. Whole blocks only, so no
+ * block is cut mid-way (a cut block would lose its closing tag).
  */
-export function joinSources(blocks: string[], maxTotal: number = MAX_SOURCES_TOTAL_CHARS): string {
-  const kept: string[] = []
+export function countFittingSources(blocks: string[], maxTotal: number = MAX_SOURCES_TOTAL_CHARS): number {
   let total = 0
+  let count = 0
   for (const block of blocks) {
     if (total + block.length > maxTotal) break
-    kept.push(block)
+    count++
     total += block.length + 2
   }
-  return kept.join("\n\n")
+  return count
+}
+
+/** Join the blocks that fit under the total cap (see countFittingSources). */
+export function joinSources(blocks: string[], maxTotal: number = MAX_SOURCES_TOTAL_CHARS): string {
+  return blocks.slice(0, countFittingSources(blocks, maxTotal)).join("\n\n")
 }

@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest"
+import { describe, expect, test, vi } from "vitest"
 import rateLimiterTest from "@convex-dev/rate-limiter/test"
 import { api } from "../convex/_generated/api"
 import { WAITLIST_JOINS_PER_MINUTE } from "../convex/waitlist"
@@ -31,12 +31,19 @@ describe("waitlist.join", () => {
   })
 
   test("over the global cap: same neutral response, no extra rows", async () => {
-    const t = setup()
-    for (let i = 0; i < WAITLIST_JOINS_PER_MINUTE + 5; i++) {
-      const r = await t.mutation(api.waitlist.join, { email: `u${i}@example.com`, platform: "both" })
-      expect(r).toEqual({ ok: true })
+    // Freeze the clock: the limiter's window starts at a random offset, so a
+    // real clock could roll into a fresh window mid-loop and refill tokens.
+    vi.useFakeTimers({ toFake: ["Date"] })
+    try {
+      const t = setup()
+      for (let i = 0; i < WAITLIST_JOINS_PER_MINUTE + 5; i++) {
+        const r = await t.mutation(api.waitlist.join, { email: `u${i}@example.com`, platform: "both" })
+        expect(r).toEqual({ ok: true })
+      }
+      expect(await rows(t)).toBe(WAITLIST_JOINS_PER_MINUTE)
+    } finally {
+      vi.useRealTimers()
     }
-    expect(await rows(t)).toBe(WAITLIST_JOINS_PER_MINUTE)
   })
 
   test("repeat joins for an existing email don't spend the cap", async () => {
