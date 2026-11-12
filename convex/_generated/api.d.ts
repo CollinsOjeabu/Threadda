@@ -25,12 +25,14 @@ import type * as http from "../http.js";
 import type * as ideas from "../ideas.js";
 import type * as ideasActions from "../ideasActions.js";
 import type * as ingestion from "../ingestion.js";
+import type * as lib_chat from "../lib/chat.js";
 import type * as lib_claude from "../lib/claude.js";
 import type * as lib_ideas from "../lib/ideas.js";
 import type * as lib_ownership from "../lib/ownership.js";
 import type * as lib_rateLimit from "../lib/rateLimit.js";
 import type * as lib_rateLimits from "../lib/rateLimits.js";
 import type * as lib_similarity from "../lib/similarity.js";
+import type * as lib_untrusted from "../lib/untrusted.js";
 import type * as migrations from "../migrations.js";
 import type * as models from "../models.js";
 import type * as posts from "../posts.js";
@@ -65,12 +67,14 @@ declare const fullApi: ApiFromModules<{
   ideas: typeof ideas;
   ideasActions: typeof ideasActions;
   ingestion: typeof ingestion;
+  "lib/chat": typeof lib_chat;
   "lib/claude": typeof lib_claude;
   "lib/ideas": typeof lib_ideas;
   "lib/ownership": typeof lib_ownership;
   "lib/rateLimit": typeof lib_rateLimit;
   "lib/rateLimits": typeof lib_rateLimits;
   "lib/similarity": typeof lib_similarity;
+  "lib/untrusted": typeof lib_untrusted;
   migrations: typeof migrations;
   models: typeof models;
   posts: typeof posts;
@@ -108,4 +112,6 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  rateLimiter: import("@convex-dev/rate-limiter/_generated/component.js").ComponentApi<"rateLimiter">;
+};

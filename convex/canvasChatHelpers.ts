@@ -1,6 +1,7 @@
 import { internalQuery } from "./_generated/server"
 import { v } from "convex/values"
 import type { Id } from "./_generated/dataModel"
+import { countFittingSources, joinSources, wrapSource } from "./lib/untrusted"
 
 /**
  * Get session data for the chat action (internal only).
@@ -37,7 +38,7 @@ export const getSourceTexts = internalQuery({
     profileId: v.id("profiles"),
   },
   handler: async (ctx, args) => {
-    const parts: string[] = []
+    const blocks: string[] = []
     const liveSourceIds: Id<"contentItems">[] = []
 
     // Set: rows written before dedupe-on-write may repeat an id.
@@ -50,18 +51,26 @@ export const getSourceTexts = internalQuery({
       if (item.userId !== args.profileId) continue
       liveSourceIds.push(id)
 
-      const title = item.title || "Untitled"
-      const summary = item.summary || ""
-      const text = item.rawText?.slice(0, 3000) || ""
-
-      parts.push(
-        `---\n**Source: ${title}** (${item.type})\n${summary ? `Summary: ${summary}\n\n` : ""}${text}\n---`
+      // Scraped / uploaded text is untrusted: delimited and capped here, and
+      // every prompt that embeds `context` also carries UNTRUSTED_SOURCES_RULE.
+      blocks.push(
+        wrapSource(item.rawText ?? "", {
+          Title: item.title || "Untitled",
+          Type: item.type,
+          Summary: item.summary,
+        }),
       )
     }
 
+    // blocks and liveSourceIds are pushed in step, so the blocks that fit are
+    // a prefix and their ids are the same-length prefix of liveSourceIds.
+    const includedCount = countFittingSources(blocks)
     return {
-      context: parts.join("\n\n") || "No source content available.",
+      context: joinSources(blocks) || "No source content available.",
+      // Every source that still exists (for the "all deleted" check).
       liveSourceIds,
+      // Only the sources whose text actually reached the prompt.
+      includedSourceIds: liveSourceIds.slice(0, includedCount),
     }
   },
 })

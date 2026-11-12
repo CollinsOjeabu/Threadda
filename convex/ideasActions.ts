@@ -4,6 +4,7 @@ import { internal } from "./_generated/api"
 import { CLAUDE_MODEL } from "./models"
 import { NO_THINKING, readText } from "./lib/claude"
 import { parseIdeas } from "./lib/ideas"
+import { UNTRUSTED_SOURCES_RULE, joinSources, wrapSource } from "./lib/untrusted"
 
 /**
  * Generate content ideas based on user's library items.
@@ -42,15 +43,15 @@ export const getForUser = action({
     await ctx.runMutation(internal.ideas._claimIdeasRequest, { profileId: userId })
 
     // Build sources context
-    const sourcesText = items
-      .map(
-        (item, i) =>
-          `${i + 1}. [${item._id}] "${item.title}" — ${(item.summary || item.rawText || "").slice(0, 200)}`
-      )
-      .join("\n")
+    // Titles and summaries derive from scraped / uploaded text: untrusted.
+    const sourcesText = joinSources(
+      items.map((item) =>
+        wrapSource(item.summary || item.rawText || "", { Id: item._id, Title: item.title }, 200),
+      ),
+    )
 
-    const prompt = `Based on these ${items.length} research sources, generate 4 LinkedIn content ideas.
-SOURCES:
+    const prompt = `Based on these ${items.length} research sources, generate 4 LinkedIn content ideas. Use each source's Id for "sourceIds".
+
 ${sourcesText}
 
 Return this exact JSON (no markdown, no preamble, ONLY the JSON array):
@@ -79,7 +80,8 @@ Return this exact JSON (no markdown, no preamble, ONLY the JSON array):
           },
         ],
         system:
-          "You are a content strategist. Generate content ideas based on research sources. Return ONLY valid JSON array, no markdown, no preamble.",
+          "You are a content strategist. Generate content ideas based on research sources. Return ONLY valid JSON array, no markdown, no preamble.\n\n" +
+          UNTRUSTED_SOURCES_RULE,
       })
     } catch (e) {
       console.error("Content ideas: Claude request failed", e)

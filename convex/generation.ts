@@ -5,6 +5,7 @@ import { api, internal } from "./_generated/api"
 import { v, ConvexError } from "convex/values"
 import { CLAUDE_MODEL } from "./models"
 import { readText } from "./lib/claude"
+import { UNTRUSTED_SOURCES_RULE } from "./lib/untrusted"
 
 /* ── Voice profile type from Claude analysis ── */
 interface VoiceDna {
@@ -152,7 +153,7 @@ export const generatePost = action({
     const voice = parseVoiceProfile(profile)
 
     // 3. Fetch source content texts
-    const { context: sourceContext, liveSourceIds } = await ctx.runQuery(
+    const { context: sourceContext, liveSourceIds, includedSourceIds } = await ctx.runQuery(
       internal.canvasChatHelpers.getSourceTexts,
       { sourceIds: session.sourceIds, profileId: profile._id },
     )
@@ -169,12 +170,15 @@ export const generatePost = action({
     })
 
     // 4. Build agent-specific system prompt
-    const systemPrompt = args.agent === "authority"
+    const systemPrompt = (args.agent === "authority"
       ? buildAuthorityPrompt(displayName, voice)
-      : buildCatalystPrompt(displayName, voice)
+      : buildCatalystPrompt(displayName, voice)) + `
+
+${UNTRUSTED_SOURCES_RULE}`
 
     // 5. Build source material block
-    const sourceIds = liveSourceIds
+    // Only the sources whose text fit under the prompt cap.
+    const sourceIds = includedSourceIds
 
     // 6. Get recent chat history
     const chatHistory = session.chatHistory ?? []
@@ -252,7 +256,7 @@ Generate a ${platformLabel} post that synthesises these sources. The post should
       agent: args.agent,
       platform: args.platform,
       body: parsed.body,
-      sourceContentIds: liveSourceIds,
+      sourceContentIds: includedSourceIds,
       title: parsed.title,
       voiceMatchScore: Math.round(parsed.voiceMatchScore),
     })
@@ -294,9 +298,10 @@ export const regeneratePost = action({
     if (!existingPost) throw new ConvexError("Post not found")
 
     // 2. Fetch source content
-    // A post may outlive some of its sources; carry forward only the live ones.
-    // (Zero is allowed here: the previous draft itself is usable material.)
-    const { context: sourceContext, liveSourceIds } = await ctx.runQuery(
+    // A post may outlive some of its sources; carry forward only the live ones
+    // whose text reached the prompt. (Zero is allowed here: the previous draft
+    // itself is usable material.)
+    const { context: sourceContext, includedSourceIds } = await ctx.runQuery(
       internal.canvasChatHelpers.getSourceTexts,
       { sourceIds: existingPost.sourceContentIds, profileId: profile._id },
     )
@@ -311,9 +316,11 @@ export const regeneratePost = action({
       resource: "generations",
     })
 
-    const systemPrompt = existingPost.agent === "authority"
+    const systemPrompt = (existingPost.agent === "authority"
       ? buildAuthorityPrompt(displayName, voice)
-      : buildCatalystPrompt(displayName, voice)
+      : buildCatalystPrompt(displayName, voice)) + `
+
+${UNTRUSTED_SOURCES_RULE}`
 
     // 4. Build regeneration prompt
     const platformLabel = existingPost.platform === "linkedin" ? "LinkedIn" : "X"
@@ -379,7 +386,7 @@ Rewrite the ${platformLabel} post incorporating this feedback. Return ONLY valid
       agent: existingPost.agent,
       platform: existingPost.platform,
       body: parsed.body,
-      sourceContentIds: liveSourceIds,
+      sourceContentIds: includedSourceIds,
       title: parsed.title,
       voiceMatchScore: Math.round(parsed.voiceMatchScore),
     })

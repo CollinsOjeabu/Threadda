@@ -230,17 +230,10 @@ export const update = mutation({
     title: v.optional(v.string()),
     summary: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
-    status: v.optional(
-      v.union(
-        v.literal("queued"),
-        v.literal("processing"),
-        v.literal("ready"),
-        v.literal("error"),
-      ),
-    ),
-    rawText: v.optional(v.string()),
-    embeddingId: v.optional(v.string()),
-    errorMessage: v.optional(v.string()),
+    // Only user-editable fields. status, rawText, embeddingId and
+    // errorMessage belong to the ingestion pipeline and are written only by
+    // internal functions (internal.helpers.*), so a client can't mark a
+    // failed item ready or swap the text its embedding was built from.
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()

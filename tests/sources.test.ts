@@ -58,4 +58,24 @@ describe("source ids", () => {
     expect(result.context).toContain("Two")
     expect(result.context).not.toContain("One")
   })
+
+  test("getSourceTexts reports only the sources that fit in the prompt", async () => {
+    const { t, profileId } = await setup()
+    // Six ~3,000-char sources: the 15,000-char cap keeps the first four.
+    const ids = await t.run(async (ctx) => {
+      const out: Id<"contentItems">[] = []
+      for (let i = 0; i < 6; i++) {
+        out.push(await ctx.db.insert("contentItems", {
+          userId: profileId, type: "note", title: `Long ${i}`, rawText: "x".repeat(5000), status: "ready",
+        }))
+      }
+      return out
+    })
+    const result = await t.query(internal.canvasChatHelpers.getSourceTexts, { sourceIds: ids, profileId })
+    expect(result.liveSourceIds).toEqual(ids)
+    expect(result.includedSourceIds).toEqual(ids.slice(0, 4))
+    expect(result.context.split("<source>").length - 1).toBe(4)
+    expect(result.context).toContain("Long 3")
+    expect(result.context).not.toContain("Long 4")
+  })
 })

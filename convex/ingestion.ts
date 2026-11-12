@@ -7,6 +7,7 @@ import { ConvexError } from "convex/values"
 import type { Id } from "./_generated/dataModel"
 import { CLAUDE_MODEL } from "./models"
 import { NO_THINKING, readText, trimToLastSentence } from "./lib/claude"
+import { UNTRUSTED_SOURCES_RULE, wrapSource } from "./lib/untrusted"
 
 /**
  * Full URL → content ingestion pipeline.
@@ -82,9 +83,10 @@ export const startIngestion = action({
         ...NO_THINKING,
         max_tokens: 400,
         system:
-          "You are a research assistant. Extract the key insight from this article in 2-3 sentences. Be specific and factual. Focus on what is novel or actionable. Return only the summary, no preamble.",
+          "You are a research assistant. Extract the key insight from the article in the <source> block in 2-3 sentences. Be specific and factual. Focus on what is novel or actionable. Return only the summary, no preamble.\n\n" +
+          UNTRUSTED_SOURCES_RULE,
         messages: [
-          { role: "user", content: rawText.slice(0, 6000) },
+          { role: "user", content: wrapSource(rawText, {}, 6000) },
         ],
       })
 
@@ -197,15 +199,15 @@ export const processRawText = action({
         // Short structured task: no thinking, so the budget is all answer.
         ...NO_THINKING,
         max_tokens: 400,
+        system: UNTRUSTED_SOURCES_RULE,
         messages: [
           {
             role: "user",
-            content: `You are a research librarian. Read this content and return a JSON object with two fields:
+            content: `You are a research librarian. Read the content in the <source> block and return a JSON object with two fields:
 1. "title": a specific, descriptive title (max 8 words) that captures the main topic
 2. "summary": a factual 2-3 sentence summary of the key points
 
-Content:
-${truncatedText.slice(0, 6000)}
+${wrapSource(truncatedText, {}, 6000)}
 
 Respond with valid JSON only. No markdown, no preamble.`,
           },

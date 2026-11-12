@@ -54,11 +54,9 @@ export const checkDuePosts = internalMutation({
     }
 
     for (const post of duePosts) {
-      const profile = await ctx.db.get(post.userId)
-      const email = profile?.email ?? "unknown"
-      const snippet = (post.title || post.body).slice(0, 60)
+      // IDs only: no emails or post text in deployment logs.
       console.log(
-        `[cron] DUE POST — user: ${email}, post: "${snippet}", scheduledAt: ${new Date(post.scheduledAt!).toISOString()}`
+        `[cron] DUE POST — profile: ${post.userId}, post: ${post._id}, scheduledAt: ${new Date(post.scheduledAt!).toISOString()}`
       )
       // Future: send email via Resend/SendGrid here
       // Subject: "Your Threadda post is ready to publish"

@@ -1,8 +1,21 @@
 import { mutation } from "./_generated/server"
+import { components } from "./_generated/api"
 import { v, ConvexError } from "convex/values"
+import { RateLimiter, MINUTE } from "@convex-dev/rate-limiter"
 
 const MAX_EMAIL_LENGTH = 254
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+
+/**
+ * Global cap on new waitlist rows. Mutations can't see the caller's IP, so
+ * this is one shared bucket for everyone: it bounds how fast a script can
+ * fill the table, not who is calling. Only new inserts spend a token;
+ * repeat joins for an existing email are free (they write nothing).
+ */
+export const WAITLIST_JOINS_PER_MINUTE = 30
+const rateLimiter = new RateLimiter(components.rateLimiter, {
+  waitlistJoin: { kind: "fixed window", rate: WAITLIST_JOINS_PER_MINUTE, period: MINUTE },
+})
 
 /**
  * Join the landing-page early-access list.
@@ -37,6 +50,11 @@ export const join = mutation({
       .first()
 
     if (!existing) {
+      // Over the cap: answer exactly like a successful join so the limit
+      // isn't observable. The row is not written.
+      const { ok } = await rateLimiter.limit(ctx, "waitlistJoin")
+      if (!ok) return { ok: true as const }
+
       await ctx.db.insert("waitlist", {
         email,
         platform: args.platform,
