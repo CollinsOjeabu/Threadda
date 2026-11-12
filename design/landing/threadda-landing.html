@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Threadda — Turn what you read into a point of view</title>
+<meta name="description" content="Threadda turns the things you read into a point of view you'd actually post — an opinionated angle, in your own voice, ready for LinkedIn or X." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<!-- Exact fonts measured off the live Base44 page -->
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+<script>
+  // Tokens are the measured values from the live page — port straight into tailwind.config.ts
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cream:   '#f7f7f2',           // page background (landing only; app stays white)
+          paper:   '#fdfdfc',           // raised surface / cards
+          panel:   '#f1f0e9',           // faint tinted section (was rgba(238,237,231,.5))
+          ink:     '#21232c',           // primary text
+          muted:   '#6b6d76',           // overlines / meta
+          body:    '#54565f',           // body copy
+          blue:    '#3750f1',           // PRIMARY accent
+          'blue-700':'#2b41d8',
+          lime:    '#e5eba3',           // SECONDARY accent
+          navy:    '#1b2031',           // dark section ground
+          'navy-card':'#242a3b',
+          'navy-line':'#333a4d',
+          line:    'rgba(33,35,44,0.10)',
+          'line-2':'#e4e3dc',
+        },
+        fontFamily: {
+          sans:  ['Manrope','ui-sans-serif','system-ui','sans-serif'],   // display + body
+          serif: ['"Instrument Serif"','Georgia','serif'],               // italic accents
+          mono:  ['"IBM Plex Mono"','ui-monospace','monospace'],         // overlines
+        },
+      },
+    },
+  };
+</script>
+<style>
+  body{font-family:'Manrope',system-ui,sans-serif;background:#f7f7f2;color:#21232c;-webkit-font-smoothing:antialiased;}
+  .h-display{font-family:'Manrope',sans-serif;font-weight:500;letter-spacing:-0.055em;line-height:0.96;}
+  .serif-i{font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-weight:400;letter-spacing:-0.01em;}
+  .overline{font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:0.16em;font-size:10px;line-height:1.4;color:#6b6d76;}
+  .num{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.08em;}
+  details>summary{list-style:none;cursor:pointer;}
+  details>summary::-webkit-details-marker{display:none;}
+  details[open] .faq-x{transform:rotate(45deg);}
+  .rule{width:34px;height:1px;background:#c9c8c0;display:inline-block;}
+</style>
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<header class="sticky top-0 z-40 bg-cream/85 backdrop-blur-sm border-b border-line">
+  <div class="mx-auto max-w-[1320px] px-6 sm:px-10 h-[68px] flex items-center justify-between">
+    <a href="#" class="flex items-center gap-2.5">
+      <!-- SWAP for the real Threadda logo (needs a light variant for the blue + navy sections) -->
+      <span class="inline-block w-[22px] h-[22px] rounded-[7px] bg-blue"></span>
+      <span class="h-display text-[21px] tracking-[-0.03em]">threadda<span class="text-blue">.</span></span>
+    </a>
+    <nav class="hidden md:flex items-center gap-9 text-[14px] text-body">
+      <a href="#product" class="hover:text-ink">Product</a>
+      <a href="#how" class="hover:text-ink">How it works</a>
+      <a href="#voice" class="hover:text-ink">Voice</a>
+      <a href="#faq" class="hover:text-ink">FAQ</a>
+    </nav>
+    <a href="#early" class="group inline-flex items-center gap-2.5 rounded-full border border-ink/15 pl-4 pr-1.5 py-1.5 text-[13px] font-medium hover:border-ink/30 transition">
+      Get early access
+      <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-ink text-cream text-[12px]">↗</span>
+    </a>
+  </div>
+</header>
+
+<main class="mx-auto max-w-[1320px] px-6 sm:px-10">
+
+<!-- ============ HERO ============ -->
+<section class="pt-[150px] pb-16">
+  <div class="grid lg:grid-cols-[1.4fr_1fr] gap-10 lg:gap-16 items-end">
+    <div>
+      <p class="overline flex items-center gap-3 mb-8"><span class="rule"></span>For people who read more than they post.</p>
+      <h1 class="h-display text-[clamp(3.6rem,9.2vw,6.8rem)]">
+        Good reads.<br />Great <span class="serif-i text-blue">takes.</span>
+      </h1>
+    </div>
+    <div class="pb-3">
+      <p class="text-[15px] leading-[1.6] text-body max-w-[26rem]">
+        Threadda turns the things you read into a point of view you'd actually post — an opinionated angle, in your own voice, ready for LinkedIn or X.
+      </p>
+      <div class="mt-7 flex flex-wrap items-center gap-5">
+        <a href="#early" class="inline-flex items-center gap-2 rounded-full bg-blue hover:bg-blue-700 transition text-white pl-6 pr-2 py-2 text-[13px] font-semibold">
+          Find your next great post
+          <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white/20">↗</span>
+        </a>
+        <a href="#how" class="text-[13.5px] text-body hover:text-ink underline underline-offset-4 decoration-ink/25">Explore Threadda ↓</a>
+      </div>
+      <p class="mt-4 num text-muted">Free during beta. No card, no sales call.</p>
+    </div>
+  </div>
+
+  <!-- three-move strip -->
+  <div class="mt-20 pt-6 border-t border-line-2 flex items-center justify-between overline">
+    <span>The thread, in three moves</span>
+    <span class="hidden sm:inline">Your world → themes → angles → your voice</span>
+  </div>
+  <div class="grid md:grid-cols-3">
+    <div class="py-9 md:pr-12 md:border-r border-line-2">
+      <div class="flex items-center justify-between overline"><span>Source</span><span class="num text-muted">01</span></div>
+      <p class="mt-7 text-[17px]">Something you couldn't stop reading.</p>
+      <p class="mt-12 overline text-muted/70">A little input. Infinite possibility.</p>
+    </div>
+    <div class="py-9 md:px-12 md:border-r border-line-2">
+      <div class="flex items-center justify-between overline"><span>Angle</span><span class="num text-muted">02</span></div>
+      <p class="mt-7 serif-i text-[20px]">"It isn't a review. It's a memory test."</p>
+      <p class="mt-12 overline text-muted/70">Your original angle</p>
+    </div>
+    <div class="py-9 md:pl-12">
+      <div class="flex items-center justify-between overline"><span>Post</span><span class="num text-muted">03</span></div>
+      <p class="mt-7 text-[17px]">Ready to make waves.</p>
+      <p class="mt-12 overline text-muted/70">Your voice, not a model's</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STARTING POINT + WORKBENCH MOCK ============ -->
+<section id="product" class="pt-4 pb-14">
+  <p class="overline">Meet your new starting point</p>
+  <h2 class="h-display text-[clamp(2rem,5vw,2.9rem)] mt-5 leading-[1.08]">
+    From rabbit hole to <span class="serif-i text-ink">point of view.</span>
+  </h2>
+
+  <div class="mt-9 rounded-[20px] bg-paper border border-line-2 shadow-[0_1px_2px_rgba(33,35,44,0.04),0_12px_40px_-12px_rgba(33,35,44,0.10)] overflow-hidden">
+    <div class="flex items-center justify-between px-5 h-11 border-b border-line text-[12px] text-muted">
+      <span class="text-ink font-semibold">threadda<span class="text-blue">.</span><span class="font-normal text-muted"> · Your workspace</span></span>
+      <span class="num">✓ All changes saved</span>
+    </div>
+    <div class="grid md:grid-cols-[210px_1fr_230px] text-[13px]">
+      <div class="p-5 border-r border-line hidden md:block">
+        <p class="overline mb-3">Your reading room</p>
+        <div class="rounded-[10px] bg-cream px-3 py-2.5 mb-2">
+          <p class="text-blue font-semibold text-[12px]">Research paper</p>
+          <p class="text-muted text-[12px] mt-1 leading-snug">Visibility, not competence, predicts who gets promoted</p>
+        </div>
+        <p class="text-muted px-3 py-2">Newsletter essay</p>
+        <p class="text-muted px-3 py-2">Saved thread</p>
+        <p class="num text-muted/70 px-3 pt-5">+ Paste any link or PDF</p>
+      </div>
+      <div class="p-6 border-r border-line">
+        <p class="num text-muted">Research paper · Organisational Behaviour Journal · 24 pages</p>
+        <h3 class="h-display text-[20px] font-semibold mt-2 leading-tight">Visibility, not competence, predicts who gets promoted</h3>
+        <p class="text-body mt-3 leading-relaxed">Across 4,300 performance reviews, managers cited visible work in promotion discussions <mark class="bg-lime/55 px-1 rounded-sm">2.4× more often</mark> than work of equal value done quietly. The effect survived controls for tenure, function and team size.</p>
+        <div class="mt-5 rounded-[12px] border border-blue/25 bg-blue/[0.04] p-4">
+          <p class="num text-blue">01 · Contrarian · LinkedIn</p>
+          <p class="mt-1.5 text-ink leading-snug">This isn't a case for posting more. It's a case for firing your review process.</p>
+        </div>
+      </div>
+      <div class="p-5 hidden md:block">
+        <div class="flex items-center justify-between"><p class="overline">Your voiceprint</p><span class="num text-muted">98%</span></div>
+        <p class="text-muted text-[12px] mt-2 mb-4 leading-snug">Learned from the posts you've published.</p>
+        <div class="space-y-3.5">
+          <div><div class="flex justify-between text-[12px]"><span>Sentence length</span><span class="text-muted">clipped</span></div><div class="h-[3px] rounded-full bg-line-2 mt-1.5"><div class="h-[3px] rounded-full bg-blue w-1/3"></div></div></div>
+          <div><div class="flex justify-between text-[12px]"><span>Plainspoken</span><span class="text-muted">no jargon</span></div><div class="h-[3px] rounded-full bg-line-2 mt-1.5"><div class="h-[3px] rounded-full bg-blue w-4/5"></div></div></div>
+          <div><div class="flex justify-between text-[12px]"><span>Contrarian</span><span class="text-muted">takes a side</span></div><div class="h-[3px] rounded-full bg-line-2 mt-1.5"><div class="h-[3px] rounded-full bg-blue w-2/3"></div></div></div>
+          <div><div class="flex justify-between text-[12px]"><span>Warmth</span><span class="text-muted">measured</span></div><div class="h-[3px] rounded-full bg-line-2 mt-1.5"><div class="h-[3px] rounded-full bg-blue w-2/5"></div></div></div>
+        </div>
+        <p class="overline mt-5">Not in your vocabulary</p>
+        <p class="text-muted/70 text-[12px] mt-2 line-through decoration-muted/40 leading-relaxed">In today's fast-paced world · Here's the thing: · Let that sink in. · Rocket-emoji sign-offs</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ (01) A FAMILIAR FEELING ============ -->
+<section class="py-32">
+  <div class="grid lg:grid-cols-2 gap-14 lg:gap-24">
+    <div>
+      <p class="overline flex items-center gap-3"><span class="num text-muted">(01)</span><span class="rule"></span>A familiar feeling</p>
+      <h2 class="h-display text-[clamp(2.6rem,6vw,4.4rem)] mt-7 leading-[1.02]">
+        You're full of ideas.<br />Your feed is <span class="serif-i text-blue">another story.</span>
+      </h2>
+      <p class="mt-7 text-[15px] leading-[1.65] text-body max-w-[25rem]">
+        Posting isn't a writing problem. It's a figuring-out-what-to-say problem. Threadda closes the distance between reading something good and saying something about it.
+      </p>
+    </div>
+    <div class="space-y-9 lg:pt-10">
+      <div class="border-t border-line-2 pt-6 flex gap-5"><span class="num text-blue pt-1">01</span><div>
+        <h3 class="h-display text-[19px] font-semibold">You read well and publish rarely.</h3>
+        <p class="mt-2.5 text-[14px] leading-[1.6] text-body">The piece landed at 8am and felt urgent. By the time you open the editor, all that's left is a vague sense that it was good and a blinking cursor.</p></div></div>
+      <div class="border-t border-line-2 pt-6 flex gap-5"><span class="num text-blue pt-1">02</span><div>
+        <h3 class="h-display text-[19px] font-semibold">A summary is not a position.</h3>
+        <p class="mt-2.5 text-[14px] leading-[1.6] text-body">Every other tool hands you the same tidy recap of the same article. A recap is the one thing your reader can already get without you.</p></div></div>
+      <div class="border-t border-line-2 pt-6 flex gap-5"><span class="num text-blue pt-1">03</span><div>
+        <h3 class="h-display text-[19px] font-semibold">You can hear the model in paragraph two.</h3>
+        <p class="mt-2.5 text-[14px] leading-[1.6] text-body">Generic drafting flattens the thing people followed you for: the rhythm of your sentences, the side you take, the words you refuse to use.</p></div></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ============ (02) HOW IT WORKS — panel ============ -->
+<section id="how" class="bg-panel">
+  <div class="mx-auto max-w-[1320px] px-6 sm:px-10 py-28">
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+      <div>
+        <p class="overline flex items-center gap-3"><span class="num text-muted">(02)</span><span class="rule"></span>Less prompting. More perspective.</p>
+        <h2 class="h-display text-[clamp(2.4rem,5.5vw,4.4rem)] mt-6 leading-[1.02]">
+          A spark. A stance.<br /><span class="serif-i text-ink">Something worth saying.</span>
+        </h2>
+      </div>
+      <p class="text-[14px] leading-relaxed text-body max-w-[19rem]">Three moves. A few minutes, instead of the six-hour "what's worth saying" brainstorm.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-5 mt-12">
+      <div class="rounded-[18px] border border-line-2 bg-paper overflow-hidden">
+        <div class="p-5 bg-cream/60 border-b border-line min-h-[160px]">
+          <p class="num text-muted">Step 01</p>
+          <div class="mt-5 rounded-[10px] border border-dashed border-line-2 py-4 text-center text-[13px] text-muted">+ Paste a link or drop a PDF</div>
+          <p class="mt-3 text-[12px] text-muted flex items-center gap-2"><span class="w-4 h-4 rounded bg-cream inline-block border border-line"></span>Visibility, not competence, predicts promotion<span class="ml-auto num">24p</span></p>
+        </div>
+        <div class="p-6"><h3 class="h-display text-[20px] font-semibold">Drop in the source</h3>
+          <p class="mt-2.5 text-[14px] leading-[1.6] text-body">Paste an article URL, upload a PDF, or add notes of your own. Threadda reads the whole piece, then works out what's actually arguable in it.</p></div>
+      </div>
+      <div class="rounded-[18px] border border-line-2 bg-paper overflow-hidden">
+        <div class="p-5 bg-blue/[0.05] border-b border-line min-h-[160px] space-y-2">
+          <p class="num text-muted">Step 02</p>
+          <div class="rounded-[10px] border border-blue/30 bg-paper px-3 py-2.5"><p class="num text-blue">01 · Contrarian</p><p class="text-[13px] mt-0.5">Fire the review process, not the quiet people</p></div>
+          <div class="rounded-[10px] border border-line-2 bg-paper/70 px-3 py-2.5"><p class="num text-muted">02 · Personal</p><p class="text-[13px] mt-0.5 text-body">The quarter nobody could see</p></div>
+        </div>
+        <div class="p-6"><h3 class="h-display text-[20px] font-semibold">Choose a position</h3>
+          <p class="mt-2.5 text-[14px] leading-[1.6] text-body">An angle isn't a topic. Each one is a hook, a claim, the tension it pushes against, how the post unfolds, and why you're the one saying it. Pick the one you'd say out loud.</p></div>
+      </div>
+      <div class="rounded-[18px] border border-line-2 bg-paper overflow-hidden">
+        <div class="p-5 bg-lime/20 border-b border-line min-h-[160px]">
+          <p class="num text-muted">Step 03</p>
+          <div class="mt-3 rounded-[10px] bg-paper border border-line-2 p-3.5">
+            <div class="flex gap-2 text-[12px]"><span class="px-2 py-0.5 rounded bg-ink text-cream">LinkedIn</span><span class="px-2 py-0.5 text-muted">X</span></div>
+            <p class="mt-2.5 text-[12px] text-body leading-snug">Everyone read that study as permission to post more. Read it again: managers promoted what they could recall, not what was best.</p>
+            <p class="mt-3 num text-muted">your voiceprint · your angle · 1,180 char</p>
+          </div>
+        </div>
+        <div class="p-6"><h3 class="h-display text-[20px] font-semibold">Shape it for the room</h3>
+          <p class="mt-2.5 text-[14px] leading-[1.6] text-body">The draft arrives in your voice, built for LinkedIn or X. You edit, you decide, you post. Nothing goes out without you.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ (03) VOICE — dark ============ -->
+<section id="voice" class="bg-navy text-white">
+  <div class="mx-auto max-w-[1320px] px-6 sm:px-10 py-28">
+    <div class="grid lg:grid-cols-2 gap-16 items-start">
+      <div>
+        <p class="overline flex items-center gap-3" style="color:rgba(255,255,255,0.5)"><span class="num" style="color:rgba(255,255,255,0.5)">(03)</span><span class="rule" style="background:rgba(255,255,255,0.3)"></span>Your voice is the whole point</p>
+        <h2 class="h-display text-[clamp(2.8rem,6.5vw,4.6rem)] mt-7 leading-[1.0]">
+          Sound like <span class="serif-i text-lime">yourself.</span><br />Not everyone.
+        </h2>
+        <p class="mt-7 text-[15px] leading-[1.65] max-w-[25rem]" style="color:rgba(255,255,255,0.62)">
+          Your sentence rhythm. The side you take. The words you'd never use. Threadda learns from your published writing, so every draft starts a little closer to you.
+        </p>
+        <div class="grid grid-cols-2 gap-x-12 gap-y-6 mt-11 max-w-[30rem]">
+          <div><div class="flex justify-between text-[13px]"><span>Sentence length</span><span style="color:rgba(255,255,255,0.4)">clipped</span></div><div class="h-[3px] rounded-full bg-white/15 mt-2"><div class="h-[3px] rounded-full bg-lime w-1/3"></div></div></div>
+          <div><div class="flex justify-between text-[13px]"><span>Plainspoken</span><span style="color:rgba(255,255,255,0.4)">no jargon</span></div><div class="h-[3px] rounded-full bg-white/15 mt-2"><div class="h-[3px] rounded-full bg-lime w-4/5"></div></div></div>
+          <div><div class="flex justify-between text-[13px]"><span>Contrarian</span><span style="color:rgba(255,255,255,0.4)">takes a side</span></div><div class="h-[3px] rounded-full bg-white/15 mt-2"><div class="h-[3px] rounded-full bg-lime w-2/3"></div></div></div>
+          <div><div class="flex justify-between text-[13px]"><span>Warmth</span><span style="color:rgba(255,255,255,0.4)">measured</span></div><div class="h-[3px] rounded-full bg-white/15 mt-2"><div class="h-[3px] rounded-full bg-lime w-2/5"></div></div></div>
+        </div>
+      </div>
+      <div class="space-y-4 lg:pt-6">
+        <div class="rounded-[18px] border border-navy-line bg-navy-card/50 p-6">
+          <p class="overline" style="color:rgba(255,255,255,0.35)">— Everyone else's AI</p>
+          <p class="mt-3 text-[15px] leading-[1.6] line-through decoration-white/20" style="color:rgba(255,255,255,0.38)">In today's fast-paced world, visibility is the key to career growth. Here's the thing: your work speaks for itself — or does it? Let that sink in.</p>
+        </div>
+        <div class="rounded-[18px] border border-navy-line bg-navy-card p-6">
+          <div class="flex items-center justify-between"><p class="overline text-lime">Unmistakably you</p><span class="num px-2.5 py-1 rounded-full border border-navy-line" style="color:rgba(255,255,255,0.5)">Your voiceprint</span></div>
+          <p class="mt-4 text-[15px] leading-[1.6]" style="color:rgba(255,255,255,0.85)">Managers promoted what they could recall, not what was best. A 2.4× gap, and nobody in that study did anything wrong — they just remembered the work someone made memorable.</p>
+          <p class="mt-5 serif-i text-[21px] text-white">If your review process can't see quiet work, it isn't a review. It's a memory test.</p>
+          <p class="mt-5 pt-5 border-t border-navy-line text-[13px]" style="color:rgba(255,255,255,0.5)">✓ Your rhythm. Your stance. Your words.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ THE THREADDA POINT OF VIEW — blue ============ -->
+<section class="bg-blue text-white">
+  <div class="mx-auto max-w-[1320px] px-6 sm:px-10 py-28 text-center">
+    <p class="overline" style="color:rgba(255,255,255,0.6)">The threadda point of view</p>
+    <h2 class="h-display text-[clamp(3rem,8.5vw,6.3rem)] mt-7 leading-[0.98]">
+      Nobody follows you<br />for <span class="serif-i text-lime">the summary.</span>
+    </h2>
+    <p class="mt-7 text-[15px] leading-relaxed" style="color:rgba(255,255,255,0.72)">They follow you for what you see in it.<br />We help you find that part.</p>
+    <a href="#early" class="inline-block mt-9 text-[14px] font-medium underline underline-offset-4 decoration-white/40 hover:decoration-white">Make your point ↗</a>
+  </div>
+</section>
+
+<main class="mx-auto max-w-[1320px] px-6 sm:px-10">
+<!-- ============ (04) MADE FOR THE ROOM ============ -->
+<section class="py-32">
+  <p class="overline flex items-center gap-3"><span class="num text-muted">(04)</span><span class="rule"></span>Made for the room</p>
+  <div class="grid lg:grid-cols-[1fr_auto] gap-6 items-end mt-6">
+    <h2 class="h-display text-[clamp(2.4rem,5.5vw,4.4rem)] leading-[1.02]">Same idea. <span class="serif-i text-ink">Different energy.</span></h2>
+    <p class="text-[14px] leading-relaxed text-body max-w-[20rem]">A LinkedIn post isn't a stretched-out tweet. An X thread isn't a chopped-up essay. Your point stays. The delivery adapts.</p>
+  </div>
+  <div class="grid md:grid-cols-2 gap-5 mt-12">
+    <div class="rounded-[18px] border border-line-2 bg-paper p-6">
+      <div class="flex items-center gap-3"><span class="w-10 h-10 rounded-full bg-blue/12 inline-flex items-center justify-center text-[13px] text-blue font-semibold">MA</span><div><p class="text-[14px] font-semibold">Maya Aoki</p><p class="text-[12px] text-muted">Head of Operations · Northwind · 1h</p></div></div>
+      <p class="mt-4 text-[14px] leading-[1.6] text-body">Three months on a migration nobody asked about. My review said "consistent". A study of 4,300 reviews just explained why. Managers cited work they could recall 2.4× more often than work of equal value they couldn't.</p>
+      <p class="mt-4 overline text-muted/70">A strong hook. A real argument. Room to breathe.</p>
+    </div>
+    <div class="rounded-[18px] border border-line-2 bg-paper p-6">
+      <div class="flex items-center gap-3"><span class="w-10 h-10 rounded-full bg-ink/10 inline-flex items-center justify-center text-[13px] font-semibold">MA</span><div><p class="text-[14px] font-semibold">Maya Aoki <span class="text-muted font-normal">@mayaops · 1h</span></p></div></div>
+      <p class="mt-4 text-[14px] leading-[1.6] text-body">A study of 4,300 reviews found managers promoted what they could recall 2.4× more often than equally good work they couldn't. Everyone read it as "post more". It's actually a review process that can't see quiet work. <span class="text-blue">1/5 · Show this thread</span></p>
+      <p class="mt-4 overline text-muted/70">One idea per post. Momentum from the first line.</p>
+    </div>
+  </div>
+  <p class="num text-muted/60 mt-6 text-center">Illustrative posts and engagement</p>
+</section>
+</main>
+
+<!-- ============ (05) WHO IT'S FOR — panel ============ -->
+<section class="bg-panel">
+  <div class="mx-auto max-w-[1320px] px-6 sm:px-10 py-28">
+    <div class="lg:text-right lg:ml-auto lg:max-w-[42rem]">
+      <p class="overline flex items-center gap-3 lg:justify-end"><span class="num text-muted">(05)</span><span class="rule"></span>A mind of your own</p>
+      <h2 class="h-display text-[clamp(2.4rem,5.5vw,4.4rem)] mt-6 leading-[1.02]">For people with <span class="serif-i text-ink">something to add.</span></h2>
+    </div>
+    <div class="grid md:grid-cols-2 gap-x-20 gap-y-11 mt-14">
+      <div class="border-t border-line-2 pt-6 flex gap-5"><span class="num text-blue pt-1">01</span><div><h3 class="h-display text-[18px] font-semibold">Operators inside large companies</h3><p class="mt-2.5 text-[14px] leading-[1.6] text-body">You know more about your function than anyone publishing about it. The block has never been knowledge — it's the twenty minutes to shape it.</p></div></div>
+      <div class="border-t border-line-2 pt-6 flex gap-5"><span class="num text-blue pt-1">02</span><div><h3 class="h-display text-[18px] font-semibold">Founders before their first round</h3><p class="mt-2.5 text-[14px] leading-[1.6] text-body">A body of thinking is the cheapest diligence you can hand an investor. Threadda turns the reading that informs your decisions into the writing that shows it.</p></div></div>
+      <div class="border-t border-line-2 pt-6 flex gap-5"><span class="num text-blue pt-1">03</span><div><h3 class="h-display text-[18px] font-semibold">Investors and analysts</h3><p class="mt-2.5 text-[14px] leading-[1.6] text-body">You already form a view on everything you read. Publishing it is a distribution problem, not a thinking one.</p></div></div>
+      <div class="border-t border-line-2 pt-6 flex gap-5"><span class="num text-blue pt-1">04</span><div><h3 class="h-display text-[18px] font-semibold">Consultants and advisors</h3><p class="mt-2.5 text-[14px] leading-[1.6] text-body">Every engagement produces a thesis you can't share. The parts you can share are worth more published than filed.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<main class="mx-auto max-w-[1320px] px-6 sm:px-10">
+<!-- ============ (06) FAQ ============ -->
+<section id="faq" class="py-32">
+  <div class="grid lg:grid-cols-[1fr_1.4fr] gap-14">
+    <div>
+      <p class="overline flex items-center gap-3"><span class="num text-muted">(06)</span><span class="rule"></span>A few good questions</p>
+      <h2 class="h-display text-[clamp(2.2rem,5vw,3.6rem)] mt-6 leading-[1.05]">Before you <span class="serif-i text-blue">follow the thread.</span></h2>
+      <p class="mt-4 text-[14px] text-body">Everything people ask before they join.</p>
+    </div>
+    <div>
+      <details open class="border-t border-line-2 py-5">
+        <summary class="flex items-center justify-between gap-4"><span class="text-[15px] font-semibold">Is this just ChatGPT with a nicer editor?</span><span class="faq-x text-blue text-xl transition">+</span></summary>
+        <p class="mt-3 text-[14px] leading-[1.6] text-body">No. A general model writes from your prompt and starts from zero every time. Threadda starts from the full source — the study, the report, the thread — and from a model of your published voice. The angle is chosen before a single word of draft is written.</p>
+      </details>
+      <details class="border-t border-line-2 py-5"><summary class="flex items-center justify-between gap-4"><span class="text-[15px] font-semibold">Do I have to hand over my whole posting history?</span><span class="faq-x text-blue text-xl transition">+</span></summary><p class="mt-3 text-[14px] leading-[1.6] text-body">No. A handful of posts you're proud of is enough to start. The more you publish through Threadda, the closer the voice gets.</p></details>
+      <details class="border-t border-line-2 py-5"><summary class="flex items-center justify-between gap-4"><span class="text-[15px] font-semibold">Which platforms does it write for?</span><span class="faq-x text-blue text-xl transition">+</span></summary><p class="mt-3 text-[14px] leading-[1.6] text-body">LinkedIn and X — each with its own voice and format, not one draft reflowed into two boxes.</p></details>
+      <details class="border-t border-line-2 py-5"><summary class="flex items-center justify-between gap-4"><span class="text-[15px] font-semibold">What can I put in?</span><span class="faq-x text-blue text-xl transition">+</span></summary><p class="mt-3 text-[14px] leading-[1.6] text-body">An article URL, a PDF, or notes of your own. Threadda reads the whole thing, not the first three paragraphs.</p></details>
+      <details class="border-t border-line-2 py-5"><summary class="flex items-center justify-between gap-4"><span class="text-[15px] font-semibold">Will the draft sound like me?</span><span class="faq-x text-blue text-xl transition">+</span></summary><p class="mt-3 text-[14px] leading-[1.6] text-body">That's the whole point. Every draft starts from your voiceprint — your rhythm, your stance, the words you use and the ones you don't — then you edit from there.</p></details>
+      <details class="border-t border-b border-line-2 py-5"><summary class="flex items-center justify-between gap-4"><span class="text-[15px] font-semibold">What does it cost?</span><span class="faq-x text-blue text-xl transition">+</span></summary><p class="mt-3 text-[14px] leading-[1.6] text-body">It's free for the length of the beta. No card to start.</p></details>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ============ FINAL CTA — lime ============ -->
+<section id="early" class="bg-lime">
+  <div class="mx-auto max-w-[1320px] px-6 sm:px-10 py-28">
+    <div class="grid lg:grid-cols-2 gap-14 items-center">
+      <div>
+        <p class="overline" style="color:rgba(33,35,44,0.55)">A new chapter starts here</p>
+        <h2 class="h-display text-[clamp(2.4rem,6vw,4rem)] mt-5 text-ink leading-[1.02]">Your next great post is <span class="serif-i">already in your tabs.</span></h2>
+        <p class="mt-6 text-[15px] leading-[1.6] max-w-[26rem]" style="color:rgba(33,35,44,0.7)">Let's get it out into the world. Join the early access list — we open in small waves and write once when yours comes up.</p>
+        <ul class="mt-6 space-y-2 text-[14px]" style="color:rgba(33,35,44,0.8)">
+          <li>✓ Free for the length of the beta</li>
+          <li>✓ One email when your wave opens</li>
+          <li>✓ No card, no sales call</li>
+        </ul>
+      </div>
+      <form class="rounded-[18px] bg-paper border border-ink/10 p-7 shadow-sm" onsubmit="return false;">
+        <h3 class="h-display text-[20px] font-semibold">Get in on the good stuff.</h3>
+        <p class="text-[13px] text-body mt-1 mb-5">Small waves. Thoughtful product. You, first.</p>
+        <label class="text-[13px] font-medium text-ink">Work email</label>
+        <input type="email" required placeholder="you@company.com" class="mt-2 w-full rounded-[10px] border border-line-2 px-4 py-3 text-[14px] outline-none focus:border-blue" />
+        <p class="text-[13px] font-medium text-ink mt-5">I publish on</p>
+        <div class="mt-2 grid grid-cols-3 gap-2 text-[13px]">
+          <button type="button" class="rounded-[10px] border border-line-2 py-2.5 hover:border-ink/30">LinkedIn</button>
+          <button type="button" class="rounded-[10px] border border-line-2 py-2.5 hover:border-ink/30">X</button>
+          <button type="button" class="rounded-[10px] border border-blue bg-blue/5 text-blue py-2.5">Both</button>
+        </div>
+        <button type="submit" class="mt-5 w-full rounded-full bg-blue hover:bg-blue-700 transition text-white py-3.5 text-[14px] font-semibold flex items-center justify-center gap-2">Request early access ↗</button>
+        <p class="mt-3 text-center num text-muted">No credit card. Nothing to install.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="mx-auto max-w-[1320px] px-6 sm:px-10 py-16">
+  <div class="grid sm:grid-cols-[1.5fr_1fr_1fr] gap-10">
+    <div>
+      <span class="h-display text-[21px]">threadda<span class="text-blue">.</span></span>
+      <p class="mt-3 text-[14px] text-body max-w-xs">Turn the reading you already do into the writing only you could publish.</p>
+    </div>
+    <div>
+      <p class="overline mb-4">Explore</p>
+      <ul class="space-y-2.5 text-[14px] text-body"><li><a href="#product" class="hover:text-ink">Workspace</a></li><li><a href="#how" class="hover:text-ink">How it works</a></li><li><a href="#voice" class="hover:text-ink">Voice</a></li></ul>
+    </div>
+    <div>
+      <p class="overline mb-4">A little more</p>
+      <ul class="space-y-2.5 text-[14px] text-body"><li><a href="#" class="hover:text-ink">Platforms</a></li><li><a href="#" class="hover:text-ink">Who it's for</a></li><li><a href="#faq" class="hover:text-ink">FAQ</a></li></ul>
+    </div>
+  </div>
+  <p class="num text-muted mt-14 pt-6 border-t border-line-2">© 2026 Threadda · Free during beta</p>
+</footer>
+
+</body>
+</html>

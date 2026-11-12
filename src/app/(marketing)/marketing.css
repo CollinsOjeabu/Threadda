@@ -1,0 +1,89 @@
+/* Marketing-only styles. Imported by app/(marketing)/layout.tsx, scoped under .lp-root. */
+
+@layer components {
+  .lp-root {
+    font-family: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+    background: #f7f7f2;
+    color: #21232c;
+    color-scheme: light;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .lp-root .h-display {
+    font-family: var(--font-manrope), sans-serif;
+    font-weight: 500;
+    letter-spacing: -0.055em;
+    line-height: 0.96;
+  }
+
+  .lp-root .serif-i {
+    font-family: var(--font-instrument-serif), Georgia, serif;
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+
+  .lp-root .lp-overline {
+    font-family: var(--font-plex-mono), monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: 10px;
+    line-height: 1.4;
+    color: #6b6d76;
+  }
+
+  .lp-root .num {
+    font-family: var(--font-plex-mono), monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+  }
+
+  .lp-root .rule {
+    width: 34px;
+    height: 1px;
+    background: #c9c8c0;
+    display: inline-block;
+  }
+
+  .lp-root details > summary {
+    list-style: none;
+    cursor: pointer;
+  }
+  .lp-root details > summary::-webkit-details-marker {
+    display: none;
+  }
+}
+
+/* ── Overrides of unlayered globals in globals.css (must be unlayered to win) ── */
+
+/* Cream ground behind the page, incl. overscroll, instead of the app's dark --bg-page */
+html:has(.lp-root),
+body:has(.lp-root) {
+  background: #f7f7f2;
+}
+
+html:has(.lp-root) {
+  scroll-behavior: smooth;
+  scroll-padding-top: 76px; /* sticky nav height + breathing room */
+}
+@media (prefers-reduced-motion: reduce) {
+  html:has(.lp-root) {
+    scroll-behavior: auto;
+  }
+}
+
+/* Blue focus ring instead of the app's ember glow */
+.lp-root *:focus-visible {
+  outline: 2px solid #3750f1;
+  outline-offset: 3px;
+  box-shadow: none;
+}
+.lp-root .lp-on-dark:focus-visible,
+.lp-root .lp-on-dark *:focus-visible {
+  outline-color: #e5eba3;
+}
+
+.lp-root ::selection {
+  background-color: rgba(55, 80, 241, 0.18);
+  color: #21232c;
+}

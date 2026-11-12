@@ -39,6 +39,7 @@ import type * as rateLimitHelpers from "../rateLimitHelpers.js";
 import type * as theme from "../theme.js";
 import type * as users from "../users.js";
 import type * as voiceDna from "../voiceDna.js";
+import type * as waitlist from "../waitlist.js";
 
 import type {
   ApiFromModules,
@@ -78,6 +79,7 @@ declare const fullApi: ApiFromModules<{
   theme: typeof theme;
   users: typeof users;
   voiceDna: typeof voiceDna;
+  waitlist: typeof waitlist;
 }>;
 
 /**
