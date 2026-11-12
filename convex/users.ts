@@ -163,26 +163,6 @@ export const ensureMyProfile = mutation({
 })
 
 /**
- * Delete profile from Clerk webhook (user.deleted).
- * Internal only.
- */
-export const deleteByClerkId = internalMutation({
-  args: { clerkId: v.string() },
-  returns: v.null(),
-  handler: async (ctx, args) => {
-    const profile = await ctx.db
-      .query("profiles")
-      .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.clerkId))
-      .unique()
-
-    if (profile) {
-      await ctx.db.delete(profile._id)
-    }
-    return null
-  },
-})
-
-/**
  * Delete ALL user data across every table, then delete the profile.
  * Called from the Clerk webhook endpoint on user.deleted events.
  * Cascades: contentItems, agentPosts, canvasSessions, graphEdges, embeddings, profile.
