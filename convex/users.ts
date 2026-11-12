@@ -3,66 +3,6 @@ import { v } from "convex/values"
 import { ConvexError } from "convex/values"
 
 /**
- * Get the current user's profile by their Clerk ID.
- * Called on every authenticated page load.
- */
-export const getByClerkId = query({
-  args: { clerkId: v.string() },
-  returns: v.union(
-    v.object({
-      _id: v.id("profiles"),
-      _creationTime: v.number(),
-      clerkId: v.string(),
-      email: v.string(),
-      name: v.optional(v.string()),
-      avatarUrl: v.optional(v.string()),
-      plan: v.union(v.literal("free"), v.literal("pro"), v.literal("team"), v.literal("internal")),
-      onboardedAt: v.optional(v.number()),
-      onboardingComplete: v.optional(v.boolean()),
-      linkedInUrl: v.optional(v.string()),
-      twitterHandle: v.optional(v.string()),
-      voiceRawSamples: v.optional(v.array(v.string())),
-      voiceProfile: v.optional(
-        v.object({
-          storytelling: v.optional(v.number()),
-          technical: v.optional(v.number()),
-          provocative: v.optional(v.number()),
-          datadriven: v.optional(v.number()),
-          formality: v.optional(v.number()),
-          avgSentenceLength: v.optional(v.number()),
-          usesQuestions: v.optional(v.boolean()),
-          emojiUsage: v.optional(v.string()),
-          signaturePhrases: v.optional(v.array(v.string())),
-          writingPersona: v.optional(v.string()),
-          trainedFrom: v.optional(v.string()),
-          trainingPostCount: v.optional(v.number()),
-          trainedAt: v.optional(v.number()),
-        }),
-      ),
-      generationsThisMonth: v.optional(v.number()),
-      ingestionsThisMonth: v.optional(v.number()),
-      canvasSessionsThisMonth: v.optional(v.number()),
-      voiceDnaAnalysesThisMonth: v.optional(v.number()),
-      periodResetAt: v.optional(v.number()),
-      theme: v.optional(v.union(v.literal("void"), v.literal("dark"), v.literal("light"))),
-      preferences: v.optional(v.object({
-        auto: v.optional(v.boolean()),
-        daily: v.optional(v.boolean()),
-        weekly: v.optional(v.boolean()),
-        discovery: v.optional(v.boolean()),
-      })),
-    }),
-    v.null(),
-  ),
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query("profiles")
-      .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.clerkId))
-      .unique()
-  },
-})
-
-/**
  * Get the current authenticated user's profile.
  * Uses Clerk auth identity — no args needed.
  */
@@ -76,39 +16,6 @@ export const getCurrent = query({
       .query("profiles")
       .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
       .unique()
-  },
-})
-
-/**
- * Ensure a profile exists for the current Clerk user.
- * Called client-side by the useCurrentUser hook on first dashboard visit.
- * Idempotent — does nothing if profile already exists.
- */
-export const ensureProfile = mutation({
-  args: {
-    clerkId: v.string(),
-    email: v.string(),
-    name: v.optional(v.string()),
-    avatarUrl: v.optional(v.string()),
-  },
-  returns: v.id("profiles"),
-  handler: async (ctx, args) => {
-    const existing = await ctx.db
-      .query("profiles")
-      .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.clerkId))
-      .unique()
-
-    if (existing) {
-      return existing._id
-    }
-
-    return await ctx.db.insert("profiles", {
-      clerkId: args.clerkId,
-      email: args.email,
-      name: args.name,
-      avatarUrl: args.avatarUrl,
-      plan: "free",
-    })
   },
 })
 
@@ -171,17 +78,27 @@ export const saveVoiceSamples = mutation({
 })
 
 /**
- * Upsert profile from Clerk webhook (user.created / user.updated).
- * Internal — only callable from other Convex functions (e.g. HTTP webhook handler).
+ * Sync a profile from a verified Clerk webhook. Internal only.
+ *
+ * - `user.created` inserts the profile if missing (the fallback below may
+ *   have created it first), otherwise patches it.
+ * - `user.updated` only ever PATCHES an existing profile and never inserts.
+ *   An update delivered after `user.deleted` therefore can't resurrect a
+ *   deleted account. (A late `user.created` still could; tracked separately.)
+ *
+ * `name` is only written when the profile has none: users edit their display
+ * name in Threadda (updateProfile), and a Clerk avatar or email change must
+ * not overwrite it.
  */
-export const upsertFromClerk = internalMutation({
+export const syncFromClerk = internalMutation({
   args: {
+    event: v.union(v.literal("created"), v.literal("updated")),
     clerkId: v.string(),
     email: v.string(),
     name: v.optional(v.string()),
     avatarUrl: v.optional(v.string()),
   },
-  returns: v.id("profiles"),
+  returns: v.union(v.id("profiles"), v.null()),
   handler: async (ctx, args) => {
     const existing = await ctx.db
       .query("profiles")
@@ -190,18 +107,56 @@ export const upsertFromClerk = internalMutation({
 
     if (existing) {
       await ctx.db.patch(existing._id, {
-        email: args.email,
-        name: args.name,
-        avatarUrl: args.avatarUrl,
+        ...(args.email && { email: args.email }),
+        ...(args.avatarUrl && { avatarUrl: args.avatarUrl }),
+        ...(!existing.name && args.name && { name: args.name }),
       })
       return existing._id
     }
+
+    if (args.event === "updated") return null
 
     return await ctx.db.insert("profiles", {
       clerkId: args.clerkId,
       email: args.email,
       name: args.name,
       avatarUrl: args.avatarUrl,
+      plan: "free",
+    })
+  },
+})
+
+/**
+ * Fallback profile creation for the signed-in user, for when the Clerk
+ * `user.created` webhook is late, lost, or not configured. Called by
+ * useCurrentUser when getCurrent returns null.
+ *
+ * Safe by construction:
+ * - Takes NO arguments. clerkId/email/name come only from ctx.auth, i.e. the
+ *   Clerk-signed JWT that Convex verifies — never from the browser.
+ * - Idempotent: looks up by_clerk_id and inserts only if missing. Convex
+ *   mutations are serializable transactions, so two concurrent calls (or a
+ *   call racing the webhook's syncFromClerk) cannot both insert: the loser
+ *   conflicts on the index read, is retried, and then sees the row.
+ */
+export const ensureMyProfile = mutation({
+  args: {},
+  returns: v.id("profiles"),
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new ConvexError("Not authenticated")
+
+    const existing = await ctx.db
+      .query("profiles")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .unique()
+    if (existing) return existing._id
+
+    return await ctx.db.insert("profiles", {
+      clerkId: identity.subject,
+      email: identity.email ?? "",
+      name: identity.name || undefined,
+      avatarUrl: identity.pictureUrl || undefined,
       plan: "free",
     })
   },
@@ -223,6 +178,65 @@ export const deleteByClerkId = internalMutation({
     if (profile) {
       await ctx.db.delete(profile._id)
     }
+    return null
+  },
+})
+
+/**
+ * Delete ALL user data across every table, then delete the profile.
+ * Called from the Clerk webhook endpoint on user.deleted events.
+ * Cascades: contentItems, agentPosts, canvasSessions, graphEdges, embeddings, profile.
+ */
+export const deleteAllUserData = internalMutation({
+  args: { clerkId: v.string() },
+  handler: async (ctx, args) => {
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.clerkId))
+      .first()
+    if (!profile) return null
+
+    const userId = profile._id
+
+    // Delete content items — index: contentItems.by_user
+    const contentItems = await ctx.db
+      .query("contentItems")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect()
+    for (const item of contentItems) await ctx.db.delete(item._id)
+
+    // Delete posts — index: agentPosts.by_user
+    const posts = await ctx.db
+      .query("agentPosts")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect()
+    for (const post of posts) await ctx.db.delete(post._id)
+
+    // Delete canvas sessions — index: canvasSessions.by_user
+    const sessions = await ctx.db
+      .query("canvasSessions")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect()
+    for (const session of sessions) await ctx.db.delete(session._id)
+
+    // Delete graph edges — index: graphEdges.by_user
+    const edges = await ctx.db
+      .query("graphEdges")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect()
+    for (const edge of edges) await ctx.db.delete(edge._id)
+
+    // Delete embeddings — index: embeddings.by_user_id
+    // (embeddings.by_user is a vectorIndex, not a regular index)
+    const embeddings = await ctx.db
+      .query("embeddings")
+      .withIndex("by_user_id", (q) => q.eq("userId", userId))
+      .collect()
+    for (const embedding of embeddings) await ctx.db.delete(embedding._id)
+
+    // Delete profile last
+    await ctx.db.delete(profile._id)
+
     return null
   },
 })

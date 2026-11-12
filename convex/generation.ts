@@ -3,6 +3,8 @@
 import { action } from "./_generated/server"
 import { api, internal } from "./_generated/api"
 import { v, ConvexError } from "convex/values"
+import { CLAUDE_MODEL } from "./models"
+import { readText } from "./lib/claude"
 
 /* ── Voice profile type from Claude analysis ── */
 interface VoiceDna {
@@ -140,12 +142,7 @@ export const generatePost = action({
     })
     if (!session) throw new ConvexError("Session not found or access denied")
 
-    // 2. Fetch source content texts
-    const sourceContext = await ctx.runQuery(internal.canvasChatHelpers.getSourceTexts, {
-      sourceIds: session.sourceIds,
-    })
-
-    // 3. Fetch user profile + parse voice DNA
+    // 2. Fetch user profile + parse voice DNA (also scopes the source read)
     const profile = await ctx.runQuery(internal.helpers.getProfileByClerkId, {
       clerkId: identity.subject,
     })
@@ -153,6 +150,17 @@ export const generatePost = action({
 
     const displayName = profile.name ?? "the user"
     const voice = parseVoiceProfile(profile)
+
+    // 3. Fetch source content texts
+    const { context: sourceContext, liveSourceIds } = await ctx.runQuery(
+      internal.canvasChatHelpers.getSourceTexts,
+      { sourceIds: session.sourceIds, profileId: profile._id },
+    )
+    // Sources deleted since the session started are dropped here, before any
+    // quota or AI spend, so posts.create's ownership check can't fail later.
+    if (liveSourceIds.length === 0) {
+      throw new ConvexError("The sources in this session have been deleted. Start a new session to generate a post.")
+    }
 
     // 3a. Rate-limit check: generations
     await ctx.runMutation(internal.rateLimitHelpers.checkAndIncrementCounter, {
@@ -166,10 +174,7 @@ export const generatePost = action({
       : buildCatalystPrompt(displayName, voice)
 
     // 5. Build source material block
-    const sourceIds = session.sourceIds
-    const sourceItems = await Promise.all(
-      sourceIds.map((id) => ctx.runQuery(internal.canvasChatHelpers.getSourceTexts, { sourceIds: [id] }))
-    )
+    const sourceIds = liveSourceIds
 
     // 6. Get recent chat history
     const chatHistory = session.chatHistory ?? []
@@ -204,8 +209,13 @@ Generate a ${platformLabel} post that synthesises these sources. The post should
     let response
     try {
       response = await claude.messages.create({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1500,
+        model: CLAUDE_MODEL,
+        // The core writing task keeps adaptive thinking, at medium effort.
+        // Thinking tokens count against max_tokens, so the cap leaves ample
+        // room above the ~1k-token post itself.
+        thinking: { type: "adaptive" },
+        output_config: { effort: "medium" },
+        max_tokens: 8000,
         system: systemPrompt,
         messages: [{ role: "user", content: userPrompt }],
       })
@@ -213,13 +223,12 @@ Generate a ${platformLabel} post that synthesises these sources. The post should
       throw new ConvexError("Our AI is temporarily unavailable. Please try again in a moment.")
     }
 
-    const textBlock = response.content.find(
-      (block: { type: string }) => block.type === "text"
-    )
-    const rawText = textBlock && "text" in textBlock
-      ? (textBlock as { text: string }).text.trim()
-      : ""
-
+    const { text: rawText, truncated } = readText(response)
+    // Never save a cut-off post: the JSON-parse fallback below would store
+    // the fragment as the post body.
+    if (truncated) {
+      throw new ConvexError("The draft came back incomplete. Please try again.")
+    }
     if (!rawText) {
       throw new ConvexError("Claude returned an empty response. Please try again.")
     }
@@ -243,7 +252,7 @@ Generate a ${platformLabel} post that synthesises these sources. The post should
       agent: args.agent,
       platform: args.platform,
       body: parsed.body,
-      sourceContentIds: session.sourceIds,
+      sourceContentIds: liveSourceIds,
       title: parsed.title,
       voiceMatchScore: Math.round(parsed.voiceMatchScore),
     })
@@ -277,17 +286,20 @@ export const regeneratePost = action({
     })
     if (!profile) throw new ConvexError("Profile not found")
 
-    // Fetch the post directly via a list query (actions can't use ctx.db)
-    const allPosts = await ctx.runQuery(api.posts.list, {
-      userId: profile._id,
-    })
+    // Fetch the post directly via a list query (actions can't use ctx.db).
+    // posts.list resolves the profile from ctx.auth, which propagates from
+    // this action's caller — so the result is already scoped to this user.
+    const allPosts = await ctx.runQuery(api.posts.list, {})
     const existingPost = allPosts.find((p) => p._id === args.postId)
     if (!existingPost) throw new ConvexError("Post not found")
 
     // 2. Fetch source content
-    const sourceContext = await ctx.runQuery(internal.canvasChatHelpers.getSourceTexts, {
-      sourceIds: existingPost.sourceContentIds,
-    })
+    // A post may outlive some of its sources; carry forward only the live ones.
+    // (Zero is allowed here: the previous draft itself is usable material.)
+    const { context: sourceContext, liveSourceIds } = await ctx.runQuery(
+      internal.canvasChatHelpers.getSourceTexts,
+      { sourceIds: existingPost.sourceContentIds, profileId: profile._id },
+    )
 
     // 3. Get voice profile
     const displayName = profile.name ?? "the user"
@@ -329,8 +341,13 @@ Rewrite the ${platformLabel} post incorporating this feedback. Return ONLY valid
     let response
     try {
       response = await claude.messages.create({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1500,
+        model: CLAUDE_MODEL,
+        // The core writing task keeps adaptive thinking, at medium effort.
+        // Thinking tokens count against max_tokens, so the cap leaves ample
+        // room above the ~1k-token post itself.
+        thinking: { type: "adaptive" },
+        output_config: { effort: "medium" },
+        max_tokens: 8000,
         system: systemPrompt,
         messages: [{ role: "user", content: userPrompt }],
       })
@@ -338,13 +355,10 @@ Rewrite the ${platformLabel} post incorporating this feedback. Return ONLY valid
       throw new ConvexError("Our AI is temporarily unavailable. Please try again in a moment.")
     }
 
-    const textBlock = response.content.find(
-      (block: { type: string }) => block.type === "text"
-    )
-    const rawText = textBlock && "text" in textBlock
-      ? (textBlock as { text: string }).text.trim()
-      : ""
-
+    const { text: rawText, truncated } = readText(response)
+    if (truncated) {
+      throw new ConvexError("The revised draft came back incomplete. Please try again.")
+    }
     if (!rawText) throw new ConvexError("Claude returned an empty response.")
 
     // 6. Parse JSON
@@ -365,7 +379,7 @@ Rewrite the ${platformLabel} post incorporating this feedback. Return ONLY valid
       agent: existingPost.agent,
       platform: existingPost.platform,
       body: parsed.body,
-      sourceContentIds: existingPost.sourceContentIds,
+      sourceContentIds: liveSourceIds,
       title: parsed.title,
       voiceMatchScore: Math.round(parsed.voiceMatchScore),
     })

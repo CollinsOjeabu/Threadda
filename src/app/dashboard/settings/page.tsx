@@ -252,17 +252,23 @@ export default function SettingsPage() {
                       <div className="text-xs text-[var(--text-muted)] mb-3.5">How Threadda behaves for you.</div>
 
                       {([
-                        { key: 'auto' as const, label: 'Auto-approve drafts above 90% voice match', sub: 'High-scoring drafts queue automatically' },
-                        { key: 'daily' as const, label: 'Daily idea notifications', sub: 'Get notified when content ideas surface' },
-                        { key: 'weekly' as const, label: 'Weekly analytics digest', sub: 'Summary of best posts and sources' },
-                        { key: 'discovery' as const, label: 'Research discovery mode', sub: 'Threadda suggests new sources from your graph' },
+                        { key: 'auto' as const, label: 'Auto-approve drafts above 90% voice match', sub: 'High-scoring drafts queue automatically', comingSoon: false },
+                        { key: 'daily' as const, label: 'Daily idea notifications', sub: 'Get notified when content ideas surface', comingSoon: true },
+                        { key: 'weekly' as const, label: 'Weekly analytics digest', sub: 'Summary of best posts and sources', comingSoon: true },
+                        { key: 'discovery' as const, label: 'Research discovery mode', sub: 'Threadda suggests new sources from your graph', comingSoon: false },
                       ]).map((row, i) => (
                         <div key={i} className="flex items-center justify-between py-2.5" style={{ borderBottom: i < 3 ? '0.5px solid var(--border)' : 'none' }}>
                           <div>
                             <div className="text-[13px] text-[var(--text-primary)]">{row.label}</div>
                             <div className="text-[11px] text-[var(--text-muted)] mt-0.5">{row.sub}</div>
                           </div>
-                          <Switch checked={toggles[row.key]} onCheckedChange={() => toggle(row.key)} />
+                          {row.comingSoon ? (
+                            <Badge variant="outline" className="text-[10px] border-[var(--ember)]/30 text-[var(--ember)] bg-[var(--ember)]/10 font-mono tracking-wide shrink-0">
+                              Coming soon
+                            </Badge>
+                          ) : (
+                            <Switch checked={toggles[row.key]} onCheckedChange={() => toggle(row.key)} />
+                          )}
                         </div>
                       ))}
 

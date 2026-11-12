@@ -1,5 +1,6 @@
 import { internalQuery } from "./_generated/server"
 import { v } from "convex/values"
+import type { Id } from "./_generated/dataModel"
 
 /**
  * Get session data for the chat action (internal only).
@@ -25,17 +26,29 @@ export const getSessionForChat = internalQuery({
 
 /**
  * Get source content text for Claude context (internal only).
+ *
+ * Also returns the ids that still resolve to the caller's own rows, so a
+ * caller that persists sources (generation -> posts.create) can drop ones
+ * deleted since the session was created instead of failing after the AI call.
  */
 export const getSourceTexts = internalQuery({
   args: {
     sourceIds: v.array(v.id("contentItems")),
+    profileId: v.id("profiles"),
   },
   handler: async (ctx, args) => {
     const parts: string[] = []
+    const liveSourceIds: Id<"contentItems">[] = []
 
-    for (const id of args.sourceIds) {
+    // Set: rows written before dedupe-on-write may repeat an id.
+    for (const id of new Set(args.sourceIds)) {
       const item = await ctx.db.get(id)
       if (!item) continue
+      // Defence in depth behind the write-time assertOwnsSources checks.
+      // Filters rather than throws: sources can legitimately be deleted, and
+      // rows written before those checks existed may still hold foreign ids.
+      if (item.userId !== args.profileId) continue
+      liveSourceIds.push(id)
 
       const title = item.title || "Untitled"
       const summary = item.summary || ""
@@ -46,6 +59,9 @@ export const getSourceTexts = internalQuery({
       )
     }
 
-    return parts.join("\n\n") || "No source content available."
+    return {
+      context: parts.join("\n\n") || "No source content available.",
+      liveSourceIds,
+    }
   },
 })

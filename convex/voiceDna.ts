@@ -3,6 +3,8 @@
 import { action } from "./_generated/server"
 import { internal } from "./_generated/api"
 import { ConvexError } from "convex/values"
+import { CLAUDE_MODEL } from "./models"
+import { NO_THINKING, readText } from "./lib/claude"
 
 /**
  * Analyze manual writing samples using Claude to generate a Voice DNA profile.
@@ -40,8 +42,10 @@ export const analyzeManualSamples = action({
     const claude = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
     const result = await claude.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 500,
+      model: CLAUDE_MODEL,
+      // Short structured task: no thinking, so the budget is all answer.
+      ...NO_THINKING,
+      max_tokens: 1000,
       system:
         "You are a writing voice analyst. Analyze writing samples and extract voice characteristics. Return ONLY valid JSON, no preamble, no markdown fences.",
       messages: [
@@ -68,13 +72,16 @@ Return this exact JSON structure:
       ],
     })
 
-    const textBlock = result.content.find((block) => block.type === "text")
-    if (!textBlock || textBlock.type !== "text") {
+    const { text, truncated, refused } = readText(result)
+    if (truncated) {
+      throw new ConvexError("Voice analysis came back incomplete. Please try again.")
+    }
+    if (refused || !text) {
       throw new ConvexError("Failed to get response from Claude")
     }
 
     // Parse JSON (strip any markdown fences if present)
-    let jsonStr = textBlock.text.trim()
+    let jsonStr = text
     if (jsonStr.startsWith("```")) {
       jsonStr = jsonStr.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "")
     }

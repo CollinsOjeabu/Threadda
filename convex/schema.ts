@@ -37,6 +37,9 @@ export default defineSchema({
     canvasSessionsThisMonth: v.optional(v.number()),
     voiceDnaAnalysesThisMonth: v.optional(v.number()),
     periodResetAt: v.optional(v.number()),
+    // Rolling hourly cap on ideasActions.getForUser (each call costs a Claude request)
+    ideasWindowStart: v.optional(v.number()),
+    ideasWindowCount: v.optional(v.number()),
     // ─── Theme preference (Sprint 3) ───
     theme: v.optional(v.union(v.literal("void"), v.literal("dark"), v.literal("light"))),
     // ─── User preferences (Sprint 7.5) ───

@@ -53,10 +53,10 @@ export default function CanvasPage() {
 
 function CanvasPageInner() {
   const { profile, isLoading: userLoading } = useCurrentUser()
-  const userId = profile?._id
 
   /* ─── Core state machine ─── */
   const [canvasState, setCanvasState] = useState<CanvasState>('constellation')
+  const [startError, setStartError] = useState<string | null>(null)
   const [selectedIds, setSelectedIds] = useState<Id<'contentItems'>[]>([])
   const [activeSessionId, setActiveSessionId] = useState<Id<'canvasSessions'> | null>(null)
   const [activeAgent, setActiveAgent] = useState<'authority' | 'catalyst'>('authority')
@@ -82,10 +82,7 @@ function CanvasPageInner() {
   }, [searchParams])
 
   /* ─── Convex queries ─── */
-  const contentItems = useQuery(
-    api.content.list,
-    userId ? { userId } : 'skip',
-  )
+  const contentItems = useQuery(api.content.list, {})
   const graphEdges = useQuery(api.graphEdges.listEdgesForUser, {})
   const sessions = useQuery(api.canvas.listSessions)
   const activeSession = useQuery(
@@ -140,16 +137,23 @@ function CanvasPageInner() {
       ?.filter((item) => selectedIds.some((id) => String(id) === String(item._id)))
       .map((item) => item.title) ?? []
 
-    const sessionId = await createSession({
-      name: `Session · ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
-      sourceIds: selectedIds,
-    })
+    setStartError(null)
+    try {
+      const sessionId = await createSession({
+        name: `Session · ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
+        sourceIds: selectedIds,
+      })
 
-    setActiveSessionId(sessionId)
-    setChatMessages([
-      { role: 'agent', content: `I've read all ${sourceNames.length} sources. Ready to synthesise — or click 💡 to break down the connections first.` },
-    ])
-    setCanvasState('session')
+      setActiveSessionId(sessionId)
+      setChatMessages([
+        { role: 'agent', content: `I've read all ${sourceNames.length} sources. Ready to synthesise — or click 💡 to break down the connections first.` },
+      ])
+      setCanvasState('session')
+    } catch (e) {
+      // No session was created: stay on the source picker and say why,
+      // rather than entering a session view with nothing behind it.
+      setStartError(parseError(e))
+    }
   }, [selectedIds, createSession, contentItems])
 
   /* ─── Load recent session ─── */
@@ -246,16 +250,30 @@ function CanvasPageInner() {
     }
   }, [generatedPostId, updatePostStatus])
 
-  /* ─── Refine post (silent background call) ─── */
+  /* ─── Refine post (background call with auth retry) ───
+   * Throws on failure: PostPreview catches it and shows a toast next to the
+   * post. (Appending to chat hid the error — chat isn't visible in preview.) */
   const handleRefinePost = useCallback(async (instruction: string) => {
-    if (!activeSessionId) return
+    if (!activeSessionId) throw new Error('This session is no longer active. Start a new session to refine.')
+    const callAction = () => sendMessageAction({
+      sessionId: activeSessionId,
+      message: `Here is my current post:\n\n${generatedPost}\n\nPlease apply this change and return ONLY the updated post text, nothing else:\n${instruction}`,
+    })
     try {
-      const response = await sendMessageAction({
-        sessionId: activeSessionId,
-        message: `Here is my current post:\n\n${generatedPost}\n\nPlease apply this change and return ONLY the updated post text, nothing else:\n${instruction}`,
-      })
+      const response = await callAction()
       setGeneratedPost(response)
     } catch (e) {
+      // Retry once on auth failure — token may have just refreshed
+      if (e instanceof Error && e.message.includes('Not authenticated')) {
+        try {
+          await new Promise(r => setTimeout(r, 1000))
+          const response = await callAction()
+          setGeneratedPost(response)
+          return
+        } catch (retryErr) {
+          throw new Error(parseError(retryErr))
+        }
+      }
       throw new Error(parseError(e))
     }
   }, [activeSessionId, generatedPost, sendMessageAction])
@@ -473,6 +491,7 @@ function CanvasPageInner() {
             onSendMessage={handleSendMessage}
             onGeneratePost={handleGeneratePost}
             onRefine={handleRefine}
+            notice={startError}
             isGenerating={isGenerating}
             sourcesCount={sourcesCount}
           />

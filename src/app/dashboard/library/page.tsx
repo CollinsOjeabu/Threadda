@@ -45,10 +45,7 @@ export default function LibraryPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid')
 
-  const items = useQuery(
-    api.content.list,
-    profile ? { userId: profile._id } : 'skip',
-  )
+  const items = useQuery(api.content.list, {})
   const removeItem = useMutation(api.content.remove)
 
   const isLoading = profileLoading || items === undefined

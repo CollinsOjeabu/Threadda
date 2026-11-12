@@ -4,6 +4,8 @@ import { action } from "./_generated/server"
 import { internal } from "./_generated/api"
 import { v } from "convex/values"
 import { ConvexError } from "convex/values"
+import { CLAUDE_MODEL } from "./models"
+import { NO_THINKING, readText } from "./lib/claude"
 
 /**
  * Send a message to the Canvas AI agent.
@@ -25,17 +27,18 @@ export const sendMessage = action({
     })
     if (!session) throw new ConvexError("Session not found")
 
-    // 2. Get source content for context
-    const sourceContext = await ctx.runQuery(internal.canvasChatHelpers.getSourceTexts, {
-      sourceIds: session.sourceIds,
-    })
-
-    // 3. Get voice profile for persona context
+    // 2. Get voice profile for persona context (also scopes the source read)
     const profile = await ctx.runQuery(internal.helpers.getProfileByClerkId, {
       clerkId: identity.subject,
     })
     if (!profile) throw new ConvexError("Profile not found")
     const displayName = profile.name ?? "the user"
+
+    // 3. Get source content for context
+    const { context: sourceContext } = await ctx.runQuery(internal.canvasChatHelpers.getSourceTexts, {
+      sourceIds: session.sourceIds,
+      profileId: profile._id,
+    })
 
     // 3a. Rate-limit check: generations
     await ctx.runMutation(internal.rateLimitHelpers.checkAndIncrementCounter, {
@@ -98,8 +101,12 @@ ${sourceContext}${voiceContext}`
     let response
     try {
       response = await claude.messages.create({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 800,
+        model: CLAUDE_MODEL,
+        // Conversational replies are short; thinking off keeps the whole
+        // budget for the answer. 2000 leaves room for a full drafted post
+        // (PostPreview's refine flow asks for the complete post back).
+        ...NO_THINKING,
+        max_tokens: 2000,
         system: systemPrompt,
         messages: claudeMessages,
       })
@@ -107,12 +114,15 @@ ${sourceContext}${voiceContext}`
       throw new ConvexError("Our AI is temporarily unavailable. Please try again in a moment.")
     }
 
-    const textBlock = response.content.find(
-      (block: { type: string }) => block.type === "text"
-    )
-    const agentResponse = textBlock && "text" in textBlock
-      ? (textBlock as { text: string }).text
-      : "Sorry, I couldn't generate a response. Please try again."
+    // Throw rather than persist a cut-off or empty reply: the refine flow
+    // would otherwise replace the user's post with a fragment or an apology.
+    const { text: agentResponse, truncated, refused } = readText(response)
+    if (truncated) {
+      throw new ConvexError("That reply ran too long and was cut off. Try asking for something shorter.")
+    }
+    if (refused || !agentResponse) {
+      throw new ConvexError("Sorry, I couldn't generate a response. Please try again.")
+    }
 
     // 7. Persist both messages
     await ctx.runMutation(internal.helpers.appendCanvasMessages, {

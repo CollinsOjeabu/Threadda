@@ -8,13 +8,27 @@ import { api } from '../../../convex/_generated/api'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { S, ProgressDots, NavButtons, Spinner, analyzeHeuristics, getPersonaLine } from './components'
 
+function ingestionErrorMessage(err: unknown): string {
+  if (err instanceof ConvexError) {
+    const data = err.data as unknown
+    if (typeof data === 'string') return data
+    if (data && typeof data === 'object' && (data as { code?: string }).code === 'RATE_LIMIT_EXCEEDED') {
+      return "You've reached this month's source import limit."
+    }
+    if (data && typeof data === 'object' && typeof (data as { message?: unknown }).message === 'string') {
+      return (data as { message: string }).message
+    }
+  }
+  return "We couldn't save that article. Check the link, or skip and add research later."
+}
+
 function setCookie(name: string, value: string, maxAge: number) {
   document.cookie = `${name}=${value}; path=/; max-age=${maxAge}; SameSite=Lax`
 }
 
 export default function OnboardingPage() {
   const router = useRouter()
-  const { clerkUser, profile } = useCurrentUser()
+  const { clerkUser, profile, error: profileError, retry: retryProfile } = useCurrentUser()
   const completeOnboard = useMutation(api.users.completeOnboarding)
   const updateProfile = useMutation(api.users.updateProfile)
   const saveVoiceSamples = useMutation(api.users.saveVoiceSamples)
@@ -99,17 +113,32 @@ export default function OnboardingPage() {
     finally { setAnalysing(false) }
   }
 
-  const handleFetchSource = async () => {
+  const handleFetchSource = () => {
     if (!sourceUrl.trim()) { setError('Enter a URL.'); return }
     if (!profile) { setError('Profile not ready.'); return }
     try { new URL(sourceUrl) } catch { setError('Invalid URL format.'); return }
-    setFetchingSource(true); setFetchStatus('Fetching...'); setError('')
-    try {
-      await startIngestion({ url: sourceUrl.trim(), userId: profile._id })
-      setFetchStatus('Done ✓'); setFirstSource({ title: new URL(sourceUrl).hostname })
-      goNext()
-    } catch (e) { setError(e instanceof ConvexError ? (e as ConvexError<string>).data : 'Failed to fetch.'); setFetchStatus(null) }
-    finally { setFetchingSource(false) }
+
+    const title = new URL(sourceUrl).hostname
+    setFetchingSource(true)
+    setError('')
+    setFirstSource(null)
+    setFetchStatus('Reading the article…')
+
+    // The user may continue while this runs (the action finishes server-side
+    // either way), but "Saved" is only shown once the save actually succeeded.
+    startIngestion({ url: sourceUrl.trim() })
+      .then(() => {
+        setFirstSource({ title })
+        setFetchStatus('Done ✓')
+      })
+      .catch((err) => {
+        console.error('Ingestion failed:', err)
+        setFetchStatus(null)
+        setError(ingestionErrorMessage(err))
+      })
+      .finally(() => {
+        setFetchingSource(false)
+      })
   }
 
   const handleFinish = async (dest: string) => {
@@ -143,6 +172,12 @@ export default function OnboardingPage() {
           <label style={S.label}>What should we call you?</label>
           <input style={S.input} value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="Your name" onFocus={e => (e.target.style.borderColor = 'var(--ember)')} onBlur={e => (e.target.style.borderColor = 'var(--border)')} />
           {error && <div style={S.err}>{error}</div>}
+          {profileError && (
+            <div style={S.err}>
+              {profileError}{' '}
+              <button type="button" onClick={retryProfile} style={{ background: 'none', border: 'none', padding: 0, color: 'inherit', textDecoration: 'underline', cursor: 'pointer', font: 'inherit' }}>Retry</button>
+            </div>
+          )}
           <NavButtons onContinue={handleStep1} backHidden disabled={displayName.trim().length < 2 || !profile} loading={loading} label={!profile ? 'Setting up your profile...' : 'Continue →'} />
         </div>
       )}
@@ -220,7 +255,7 @@ export default function OnboardingPage() {
           )}
 
           {error && <div style={S.err}>{error}</div>}
-          <NavButtons onBack={goBack} onContinue={() => { if (firstSource || skippedSource) goNext(); else { setSkippedSource(true); goNext() } }} disabled={false} label={firstSource ? 'Continue →' : 'Continue →'} />
+          <NavButtons onBack={goBack} onContinue={() => { if (firstSource || skippedSource || fetchingSource) goNext(); else { setSkippedSource(true); goNext() } }} disabled={false} label={firstSource ? 'Continue →' : 'Continue →'} />
           <button style={S.skip} onClick={() => { setSkippedSource(true); goNext() }}>Skip — I&apos;ll add research later</button>
         </div>
       )}

@@ -50,10 +50,7 @@ type ViewTab = 'Month' | 'List'
 export default function SchedulePage() {
   const { profile, isLoading: userLoading } = useCurrentUser()
 
-  const allPosts = useQuery(
-    api.posts.list,
-    profile?._id ? { userId: profile._id } : 'skip'
-  )
+  const allPosts = useQuery(api.posts.list, {})
 
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [viewTab, setViewTab] = useState<ViewTab>('Month')
@@ -451,8 +448,14 @@ export default function SchedulePage() {
                         <input type="date" value={datePickerValue} onChange={(e) => setDatePickerValue(e.target.value)} style={{ fontSize: 12, padding: '4px 8px', borderRadius: 6, border: '0.5px solid var(--border)', background: 'var(--bg-surface)', color: 'var(--text-primary)', fontFamily: "'Inter', sans-serif" }} />
                         <Button size="sm" className="text-xs" disabled={!datePickerValue} onClick={async () => {
                           const ts = new Date(datePickerValue + 'T09:00:00Z').getTime()
-                          await scheduleMut({ postId: post._id as any, scheduledAt: ts })
-                          setDatePickerFor(null); setDatePickerValue(''); showToast('Post scheduled!')
+                          if (isNaN(ts)) return
+                          try {
+                            await scheduleMut({ postId: post._id as any, scheduledAt: ts })
+                            setDatePickerFor(null); setDatePickerValue(''); showToast('Post scheduled!')
+                          } catch (err) {
+                            console.error('Schedule failed:', err)
+                            showToast('Failed to schedule post')
+                          }
                         }}>Set</Button>
                         <Button variant="ghost" size="sm" className="text-xs" onClick={() => { setDatePickerFor(null); setDatePickerValue('') }}>✕</Button>
                       </div>

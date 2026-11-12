@@ -163,14 +163,14 @@ export function SourcesPanel({
 
                       <div style={{ minWidth: 0, flex: 1 }}>
                         <div className="font-mono" style={{
-                          fontSize: 10, color: canvasState === 'post-preview' ? 'var(--text-muted)' : 'var(--text-primary)',
+                          fontSize: 12, color: canvasState === 'post-preview' ? 'var(--text-muted)' : 'var(--text-primary)',
                           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                         }}>
                           {item.title}
                         </div>
                         {canvasState === 'post-preview' && (
                           <div className="font-mono" style={{
-                            fontSize: 7, color: 'var(--ember)', opacity: 0.5,
+                            fontSize: 12, color: 'var(--ember)', opacity: 0.5,
                             textTransform: 'uppercase', marginTop: 1,
                           }}>
                             {i === 0 ? 'PRIMARY' : 'SUPPORTING'}
@@ -225,7 +225,7 @@ export function SourcesPanel({
                       }} />
 
                       <div className="font-mono" style={{
-                        fontSize: 10, color: 'var(--text-muted)',
+                        fontSize: 12, color: 'var(--text-muted)',
                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                         minWidth: 0,
                       }}>

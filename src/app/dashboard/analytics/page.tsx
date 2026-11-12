@@ -41,14 +41,8 @@ function SkeletonStatCard() {
 export default function AnalyticsPage() {
   const { profile, isLoading: userLoading } = useCurrentUser()
 
-  const allPosts = useQuery(
-    api.posts.list,
-    profile?._id ? { userId: profile._id } : 'skip'
-  )
-  const allContent = useQuery(
-    api.content.list,
-    profile?._id ? { userId: profile._id } : 'skip'
-  )
+  const allPosts = useQuery(api.posts.list, {})
+  const allContent = useQuery(api.content.list, {})
 
   const isLoading = userLoading || allPosts === undefined || allContent === undefined
 

@@ -174,10 +174,7 @@ export function Footer() {
         <div style={{display:"grid",gridTemplateColumns:"1.2fr 1fr 1fr 1fr",gap:40,paddingBottom:44,borderBottom:`0.5px solid ${C.border}`,marginBottom:28}}>
           <div>
             <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:12}}>
-              <div style={{width:22,height:22,borderRadius:"50%",background:C.ember,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                <svg viewBox="0 0 12 12" fill="none" width={10} height={10}><path d="M4 10 C4 6 6 3 10 2" stroke="#FF6B35" strokeWidth="1.8" strokeLinecap="round" fill="none" opacity="0.5"/><path d="M6 10 C6 7 7.5 5 10 4" stroke="#FF6B35" strokeWidth="3" strokeLinecap="round" fill="none"/><line x1="5" y1="1.5" x2="7.5" y2="11" stroke="#fff" strokeWidth="1.8" strokeLinecap="round"/></svg>
-              </div>
-              <span style={{fontSize:12,fontWeight:700,letterSpacing:"0.07em",color:C.cream}}>THREADDA</span>
+              <img src="/images/threadda-logo-dark.svg" alt="Threadda" style={{ height: 24 }} />
             </div>
             <p style={{fontSize:13,color:C.creamMuted,lineHeight:1.7,maxWidth:200}}>Save research. Synthesise connections. Publish original thought leadership.</p>
             <p style={{fontFamily:"'DM Serif Display',serif",fontStyle:"italic",fontSize:17,color:C.ember,marginTop:18}}>Your research, amplified.</p>

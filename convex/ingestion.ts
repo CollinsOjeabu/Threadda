@@ -5,6 +5,8 @@ import { internal } from "./_generated/api"
 import { v } from "convex/values"
 import { ConvexError } from "convex/values"
 import type { Id } from "./_generated/dataModel"
+import { CLAUDE_MODEL } from "./models"
+import { NO_THINKING, readText, trimToLastSentence } from "./lib/claude"
 
 /**
  * Full URL → content ingestion pipeline.
@@ -13,9 +15,17 @@ import type { Id } from "./_generated/dataModel"
 export const startIngestion = action({
   args: {
     url: v.string(),
-    userId: v.id("profiles"),
   },
   handler: async (ctx, args): Promise<{ success: boolean; title: string; summary: string; itemId: Id<"contentItems"> }> => {
+    // Auth — resolve profile from Clerk identity
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new ConvexError("Not authenticated")
+
+    const profile = await ctx.runQuery(internal.helpers.getProfileByClerkId, {
+      clerkId: identity.subject,
+    })
+    if (!profile) throw new ConvexError("Profile not found")
+
     // Step 1: Validate URL
     let parsedUrl: URL
     try {
@@ -29,7 +39,7 @@ export const startIngestion = action({
 
     // Step 1a: Rate-limit check: ingestions
     await ctx.runMutation(internal.rateLimitHelpers.checkAndIncrementCounter, {
-      profileId: args.userId,
+      profileId: profile._id,
       resource: "ingestions",
     })
 
@@ -67,8 +77,10 @@ export const startIngestion = action({
       const claude = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
       const summaryResult = await claude.messages.create({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 300,
+        model: CLAUDE_MODEL,
+        // Short task: no thinking, so the budget is all answer.
+        ...NO_THINKING,
+        max_tokens: 400,
         system:
           "You are a research assistant. Extract the key insight from this article in 2-3 sentences. Be specific and factual. Focus on what is novel or actionable. Return only the summary, no preamble.",
         messages: [
@@ -76,10 +88,10 @@ export const startIngestion = action({
         ],
       })
 
-      const textBlock = summaryResult.content.find(
-        (block: { type: string }) => block.type === "text",
-      )
-      summary = textBlock && "text" in textBlock ? (textBlock as { text: string }).text : ""
+      const { text, truncated } = readText(summaryResult)
+      // A cut-off summary is still useful once the partial sentence is dropped.
+      summary = truncated ? trimToLastSentence(text) : text
+      if (truncated) console.warn("URL summary hit max_tokens; kept complete sentences only")
     } catch (e) {
       // Partial failure — save without summary
       console.error("Claude summarization failed:", e)
@@ -105,7 +117,7 @@ export const startIngestion = action({
 
     // Step 6: Store in Convex
     const itemId: Id<"contentItems"> = await ctx.runMutation(internal.helpers.saveContentItem, {
-      userId: args.userId,
+      userId: profile._id,
       url: args.url,
       title: String(title).slice(0, 200),
       rawText,
@@ -119,7 +131,7 @@ export const startIngestion = action({
         const embeddingVector: number[] = JSON.parse(embeddingStr)
         await ctx.runMutation(internal.embeddings.storeEmbedding, {
           contentItemId: itemId,
-          userId: args.userId,
+          userId: profile._id,
           vector: embeddingVector,
         })
 
@@ -135,19 +147,6 @@ export const startIngestion = action({
     }
 
     return { success: true, title: String(title), summary, itemId }
-  },
-})
-
-/**
- * Get the ingestion status of a content item.
- */
-export const getIngestionStatus = action({
-  args: { itemId: v.id("contentItems") },
-  handler: async (ctx, args): Promise<{ status: string; errorMessage?: string } | null> => {
-    const item: { status: string; errorMessage?: string } | null = await ctx.runQuery(internal.helpers.getItemStatus, {
-      itemId: args.itemId,
-    })
-    return item
   },
 })
 
@@ -194,8 +193,10 @@ export const processRawText = action({
       const claude = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
       const summaryResult = await claude.messages.create({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 300,
+        model: CLAUDE_MODEL,
+        // Short structured task: no thinking, so the budget is all answer.
+        ...NO_THINKING,
+        max_tokens: 400,
         messages: [
           {
             role: "user",
@@ -211,10 +212,9 @@ Respond with valid JSON only. No markdown, no preamble.`,
         ],
       })
 
-      const textBlock = summaryResult.content.find(
-        (block: { type: string }) => block.type === "text",
-      )
-      const raw = textBlock && "text" in textBlock ? (textBlock as { text: string }).text : ""
+      const { text: raw, truncated } = readText(summaryResult)
+      // Cut-off JSON is unusable — fall back to the same path as a failed call.
+      if (truncated) throw new Error("Title/summary response hit max_tokens")
 
       try {
         const parsed = JSON.parse(raw)

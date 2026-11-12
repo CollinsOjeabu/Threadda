@@ -16,6 +16,8 @@ interface RightPanelProps {
   onRefine: (instruction: string) => Promise<void>
   isGenerating: boolean
   sourcesCount: number
+  /** Error to show on the source-picker state (e.g. session couldn't start). */
+  notice?: string | null
 }
 
 const REFINEMENT_CHIPS = [
@@ -43,6 +45,7 @@ export function RightPanel({
   onRefine,
   isGenerating,
   sourcesCount,
+  notice,
 }: RightPanelProps) {
   const [input, setInput] = useState('')
   const [refinementInput, setRefinementInput] = useState('')
@@ -144,6 +147,11 @@ export function RightPanel({
             marginTop: 'auto', padding: '10px 6px',
             textAlign: 'center',
           }}>
+            {notice && (
+              <div role="alert" style={{ fontSize: 11, color: 'var(--error)', marginBottom: 8, lineHeight: 1.4 }}>
+                {notice}
+              </div>
+            )}
             <div className="font-mono" style={{ fontSize: 8, color: 'var(--text-faint)' }}>
               Select sources + click &quot;Start Session&quot;
             </div>
@@ -173,7 +181,7 @@ export function RightPanel({
                   border: `0.5px solid ${msg.role === 'user' ? 'rgba(255,107,53,0.18)' : 'rgba(255,255,255,0.06)'}`,
                 }}>
                 <div style={{
-                    fontSize: 13, color: 'var(--text-primary)',
+                    fontSize: 15, color: 'var(--text-primary)',
                     lineHeight: 1.6,
                   }}>
                     {msg.content === '...' ? (
@@ -250,7 +258,7 @@ export function RightPanel({
                 style={{
                   flex: 1, background: 'transparent', border: 'none',
                   outline: 'none', color: 'var(--text-primary)',
-                  fontSize: 13, padding: '6px 6px',
+                  fontSize: 15, padding: '6px 6px',
                   fontFamily: 'var(--font-inter), sans-serif',
                 }}
               />

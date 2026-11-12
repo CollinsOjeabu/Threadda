@@ -49,7 +49,7 @@ export default function CanvasMoment() {
               {/* Sidebar */}
               <div style={{background:"#070E09",borderRight:`0.5px solid ${C.border}`,padding:"18px 0",display:"flex",flexDirection:"column"}}>
                 <div style={{padding:"0 18px 18px",borderBottom:`0.5px solid ${C.border}`,marginBottom:14}}>
-                  <div style={{fontFamily:"'DM Serif Display',serif",fontSize:17,color:C.ember,fontStyle:"italic"}}>Threadda</div>
+                  <img src="/images/threadda-icon.svg" alt="Threadda" style={{ height: 18, width: 18 }} />
                   <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"rgba(237,232,224,0.2)",letterSpacing:"0.1em",textTransform:"uppercase"}}>Synthesis Canvas</div>
                 </div>
                 {["Canvas","Library","Graph","Agents"].map((item,i) => (

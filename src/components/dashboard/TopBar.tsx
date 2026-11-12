@@ -1,6 +1,6 @@
 'use client'
 
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 
 const PAGE_NAMES: Record<string, string> = {
   '/dashboard': 'Home',
@@ -22,8 +22,10 @@ export function TopBar({
   onSearchOpen: () => void
 }) {
   const pathname = usePathname()
-  const router = useRouter()
   const pageName = PAGE_NAMES[pathname] || 'Home'
+
+  // Expanded state — top utility bar: Hide it completely — render nothing when sidebar is expanded
+  if (!collapsed) return null
 
   return (
     <header style={{
@@ -34,59 +36,37 @@ export function TopBar({
       padding: '0 16px', gap: 10,
     }}>
       {/* Collapsed: utility box + separator + page name */}
-      {collapsed && (
-        <>
-          <div style={{
-            display: 'flex', alignItems: 'center',
-            background: 'var(--bg-elevated)', border: '0.5px solid var(--border)',
-            borderRadius: 7, padding: '3px 5px', gap: 2,
-          }}>
-            {/* New Synthesis */}
-            <UtilityButton
-              tooltip="New Synthesis"
-              color="var(--ember)"
-              onClick={() => router.push('/dashboard/canvas')}
-            >
-              <svg width="12" height="12" fill="none" viewBox="0 0 14 14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                <line x1="7" y1="2" x2="7" y2="12"/><line x1="2" y1="7" x2="12" y2="7"/>
-              </svg>
-            </UtilityButton>
-            {/* Search */}
-            <UtilityButton
-              tooltip="Search"
-              color="var(--text-muted)"
-              onClick={onSearchOpen}
-            >
-              <svg width="12" height="12" fill="none" viewBox="0 0 14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                <circle cx="6" cy="6" r="4"/><line x1="9" y1="9" x2="13" y2="13"/>
-              </svg>
-            </UtilityButton>
-            {/* Add to Library */}
-            <UtilityButton
-              tooltip="Add to Library"
-              color="var(--text-muted)"
-              onClick={() => router.push('/dashboard/library/new')}
-            >
-              <svg width="12" height="12" fill="none" viewBox="0 0 14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                <rect x="2" y="1" width="10" height="12" rx="1.5"/><line x1="5" y1="5" x2="9" y2="5"/><line x1="5" y1="8" x2="7.5" y2="8"/>
-              </svg>
-            </UtilityButton>
-            {/* Expand sidebar */}
-            <UtilityButton
-              tooltip="Expand sidebar"
-              color="var(--text-muted)"
-              onClick={onToggle}
-            >
-              <svg width="12" height="12" fill="none" viewBox="0 0 14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                <path d="M5 4l4 3-4 3"/>
-              </svg>
-            </UtilityButton>
-          </div>
+      <div style={{
+        display: 'flex', alignItems: 'center',
+        background: 'var(--bg-elevated)', border: '0.5px solid var(--border)',
+        borderRadius: 7, padding: '3px 5px', gap: 2,
+      }}>
+        {/* Expand sidebar (PanelLeftOpen SVG) */}
+        <UtilityButton
+          tooltip="Expand sidebar"
+          color="var(--text-muted)"
+          onClick={onToggle}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <line x1="9" y1="3" x2="9" y2="21"/>
+            <path d="M13 8l3 4-3 4"/>
+          </svg>
+        </UtilityButton>
+        {/* Search */}
+        <UtilityButton
+          tooltip="Search"
+          color="var(--text-muted)"
+          onClick={onSearchOpen}
+        >
+          <svg width="12" height="12" fill="none" viewBox="0 0 14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+            <circle cx="6" cy="6" r="4"/><line x1="9" y1="9" x2="13" y2="13"/>
+          </svg>
+        </UtilityButton>
+      </div>
 
-          {/* Separator */}
-          <div style={{ width: 0.5, height: 18, background: 'var(--border)' }} />
-        </>
-      )}
+      {/* Separator */}
+      <div style={{ width: 0.5, height: 18, background: 'var(--border)' }} />
 
       {/* Page name */}
       <span style={{

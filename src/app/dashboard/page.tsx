@@ -6,7 +6,7 @@ import { useQuery } from 'convex/react'
 import { useAction } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 function Skel({ w, h }: { w: number; h: number }) {
   return <div style={{ width: w, height: h, borderRadius: 4, background: 'var(--bg-elevated)', animation: 'pulse 1.5s ease-in-out infinite' }} />
@@ -24,21 +24,30 @@ function timeAgo(ts: number): string {
 export default function DashboardHome() {
   const router = useRouter()
   const { profile, isLoading: userLoading } = useCurrentUser()
-  const contentItems = useQuery(api.content.list, profile?._id ? { userId: profile._id } : 'skip')
-  const agentPosts = useQuery(api.posts.list, profile?._id ? { userId: profile._id } : 'skip')
+  const contentItems = useQuery(api.content.list, {})
+  const agentPosts = useQuery(api.posts.list, {})
   const graphEdgeCount = useQuery(api.graphEdges.getCountForUser, {})
 
   // Content ideas
   const [ideas, setIdeas] = useState<Array<{ title: string; sourceCount: number; agent: string; sourceIds: string[] }>>([])
   const [ideasLoading, setIdeasLoading] = useState(false)
-  const generateIdeas = useAction(api.ideas.getForUser)
+  const generateIdeas = useAction(api.ideasActions.getForUser)
 
+  // Request ideas once per visit. Keying the effect on "ideas still empty"
+  // re-fired it whenever a request returned [] — an endless loop of paid
+  // Claude calls for as long as the dashboard stayed open.
+  const ideasRequested = useRef(false)
   useEffect(() => {
-    if (profile?._id && contentItems && contentItems.length >= 1 && ideas.length === 0 && !ideasLoading) {
+    if (ideasRequested.current) return
+    if (profile?._id && contentItems && contentItems.length >= 1) {
+      ideasRequested.current = true
       setIdeasLoading(true)
-      generateIdeas().then((r) => { setIdeas(r); setIdeasLoading(false) }).catch(() => setIdeasLoading(false))
+      generateIdeas()
+        .then((r) => setIdeas(r))
+        .catch((e) => console.error('Content ideas failed:', e))
+        .finally(() => setIdeasLoading(false))
     }
-  }, [profile?._id, contentItems, ideas.length, ideasLoading, generateIdeas])
+  }, [profile?._id, contentItems, generateIdeas])
 
   const firstName = profile?.name?.split(' ')[0] ?? ''
   const hour = new Date().getHours()
@@ -53,7 +62,7 @@ export default function DashboardHome() {
   const scoredPosts = agentPosts?.filter((p: any) => typeof p.voiceMatchScore === 'number') ?? []
   const avgVoice = scoredPosts.length > 0 ? Math.round(scoredPosts.reduce((s: number, p: any) => s + p.voiceMatchScore, 0) / scoredPosts.length) : null
 
-  const loading = contentItems === undefined || agentPosts === undefined
+  const loading = userLoading || contentItems === undefined || agentPosts === undefined
 
   // Build activity timeline
   const activities: Array<{ icon: string; text: string; bold: string; time: number }> = []
