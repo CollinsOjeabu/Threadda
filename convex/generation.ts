@@ -5,6 +5,7 @@ import { api, internal } from "./_generated/api"
 import { v, ConvexError } from "convex/values"
 import { CLAUDE_MODEL } from "./models"
 import { readText } from "./lib/claude"
+import { UNTRUSTED_SOURCES_RULE } from "./lib/untrusted"
 
 /* ── Voice profile type from Claude analysis ── */
 interface VoiceDna {
@@ -169,9 +170,11 @@ export const generatePost = action({
     })
 
     // 4. Build agent-specific system prompt
-    const systemPrompt = args.agent === "authority"
+    const systemPrompt = (args.agent === "authority"
       ? buildAuthorityPrompt(displayName, voice)
-      : buildCatalystPrompt(displayName, voice)
+      : buildCatalystPrompt(displayName, voice)) + `
+
+${UNTRUSTED_SOURCES_RULE}`
 
     // 5. Build source material block
     const sourceIds = liveSourceIds
@@ -311,9 +314,11 @@ export const regeneratePost = action({
       resource: "generations",
     })
 
-    const systemPrompt = existingPost.agent === "authority"
+    const systemPrompt = (existingPost.agent === "authority"
       ? buildAuthorityPrompt(displayName, voice)
-      : buildCatalystPrompt(displayName, voice)
+      : buildCatalystPrompt(displayName, voice)) + `
+
+${UNTRUSTED_SOURCES_RULE}`
 
     // 4. Build regeneration prompt
     const platformLabel = existingPost.platform === "linkedin" ? "LinkedIn" : "X"

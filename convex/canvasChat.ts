@@ -6,6 +6,7 @@ import { v } from "convex/values"
 import { ConvexError } from "convex/values"
 import { CLAUDE_MODEL } from "./models"
 import { NO_THINKING, readText } from "./lib/claude"
+import { UNTRUSTED_SOURCES_RULE } from "./lib/untrusted"
 
 /**
  * Send a message to the Canvas AI agent.
@@ -89,6 +90,8 @@ CONVERSATION RULES:
 - When asked to draft, write the full draft with no preamble before or explanation after
 - Never comment on source quality, completeness, or credibility — work with what you have
 - Never say "this appears to be," "I should note that," "it's worth mentioning," "as an AI" — just respond
+
+${UNTRUSTED_SOURCES_RULE}
 
 The user has loaded these research sources:
 
