@@ -227,7 +227,7 @@ export const create = mutation({
 
     // Same check as canvas.createSession: regeneratePost later feeds these
     // ids to getSourceTexts, so an unvalidated id here is a cross-tenant read.
-    await assertOwnsSources(ctx, profile._id, args.sourceContentIds)
+    const sourceContentIds = await assertOwnsSources(ctx, profile._id, args.sourceContentIds)
 
     // Auto-approve drafts above 90% voice match when preference is enabled
     const autoApprove = profile.preferences?.auto === true
@@ -239,7 +239,7 @@ export const create = mutation({
       agent: args.agent,
       platform: args.platform,
       body: args.body,
-      sourceContentIds: args.sourceContentIds,
+      sourceContentIds,
       status,
       title: args.title,
       voiceMatchScore: args.voiceMatchScore,

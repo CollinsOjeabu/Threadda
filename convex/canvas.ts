@@ -25,7 +25,7 @@ export const createSession = mutation({
 
     // Every attached source must belong to the caller. Checked before the
     // rate-limit gate so a rejected request does not consume quota.
-    await assertOwnsSources(ctx, profile._id, args.sourceIds)
+    const sourceIds = await assertOwnsSources(ctx, profile._id, args.sourceIds)
 
     // Rate-limit check: canvasSessions
     await gateMutation(ctx, profile._id, "canvasSessions")
@@ -33,7 +33,7 @@ export const createSession = mutation({
     return await ctx.db.insert("canvasSessions", {
       userId: profile._id,
       name: args.name.trim() || "Untitled Session",
-      sourceIds: args.sourceIds,
+      sourceIds,
       chatHistory: [],
       lastOpenedAt: Date.now(),
     })

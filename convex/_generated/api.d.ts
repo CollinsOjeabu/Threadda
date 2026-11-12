@@ -25,6 +25,8 @@ import type * as http from "../http.js";
 import type * as ideas from "../ideas.js";
 import type * as ideasActions from "../ideasActions.js";
 import type * as ingestion from "../ingestion.js";
+import type * as lib_claude from "../lib/claude.js";
+import type * as lib_ideas from "../lib/ideas.js";
 import type * as lib_ownership from "../lib/ownership.js";
 import type * as lib_rateLimit from "../lib/rateLimit.js";
 import type * as lib_rateLimits from "../lib/rateLimits.js";
@@ -62,6 +64,8 @@ declare const fullApi: ApiFromModules<{
   ideas: typeof ideas;
   ideasActions: typeof ideasActions;
   ingestion: typeof ingestion;
+  "lib/claude": typeof lib_claude;
+  "lib/ideas": typeof lib_ideas;
   "lib/ownership": typeof lib_ownership;
   "lib/rateLimit": typeof lib_rateLimit;
   "lib/rateLimits": typeof lib_rateLimits;

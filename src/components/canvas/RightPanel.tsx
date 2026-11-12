@@ -16,6 +16,8 @@ interface RightPanelProps {
   onRefine: (instruction: string) => Promise<void>
   isGenerating: boolean
   sourcesCount: number
+  /** Error to show on the source-picker state (e.g. session couldn't start). */
+  notice?: string | null
 }
 
 const REFINEMENT_CHIPS = [
@@ -43,6 +45,7 @@ export function RightPanel({
   onRefine,
   isGenerating,
   sourcesCount,
+  notice,
 }: RightPanelProps) {
   const [input, setInput] = useState('')
   const [refinementInput, setRefinementInput] = useState('')
@@ -144,6 +147,11 @@ export function RightPanel({
             marginTop: 'auto', padding: '10px 6px',
             textAlign: 'center',
           }}>
+            {notice && (
+              <div role="alert" style={{ fontSize: 11, color: 'var(--error)', marginBottom: 8, lineHeight: 1.4 }}>
+                {notice}
+              </div>
+            )}
             <div className="font-mono" style={{ fontSize: 8, color: 'var(--text-faint)' }}>
               Select sources + click &quot;Start Session&quot;
             </div>

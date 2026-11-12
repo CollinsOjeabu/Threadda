@@ -57,7 +57,8 @@ http.route({
         const name = `${first} ${last}`.trim() || undefined
         const avatarUrl = (data.image_url as string | undefined) || undefined
 
-        await ctx.runMutation(internal.users.upsertFromClerk, {
+        await ctx.runMutation(internal.users.syncFromClerk, {
+          event: type === "user.created" ? "created" : "updated",
           clerkId,
           email,
           name,

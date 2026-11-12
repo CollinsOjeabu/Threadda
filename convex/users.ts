@@ -78,17 +78,27 @@ export const saveVoiceSamples = mutation({
 })
 
 /**
- * Upsert profile from Clerk webhook (user.created / user.updated).
- * Internal — only callable from other Convex functions (e.g. HTTP webhook handler).
+ * Sync a profile from a verified Clerk webhook. Internal only.
+ *
+ * - `user.created` inserts the profile if missing (the fallback below may
+ *   have created it first), otherwise patches it.
+ * - `user.updated` only ever PATCHES an existing profile and never inserts.
+ *   An update delivered after `user.deleted` therefore can't resurrect a
+ *   deleted account. (A late `user.created` still could; tracked separately.)
+ *
+ * `name` is only written when the profile has none: users edit their display
+ * name in Threadda (updateProfile), and a Clerk avatar or email change must
+ * not overwrite it.
  */
-export const upsertFromClerk = internalMutation({
+export const syncFromClerk = internalMutation({
   args: {
+    event: v.union(v.literal("created"), v.literal("updated")),
     clerkId: v.string(),
     email: v.string(),
     name: v.optional(v.string()),
     avatarUrl: v.optional(v.string()),
   },
-  returns: v.id("profiles"),
+  returns: v.union(v.id("profiles"), v.null()),
   handler: async (ctx, args) => {
     const existing = await ctx.db
       .query("profiles")
@@ -97,18 +107,56 @@ export const upsertFromClerk = internalMutation({
 
     if (existing) {
       await ctx.db.patch(existing._id, {
-        email: args.email,
-        name: args.name,
-        avatarUrl: args.avatarUrl,
+        ...(args.email && { email: args.email }),
+        ...(args.avatarUrl && { avatarUrl: args.avatarUrl }),
+        ...(!existing.name && args.name && { name: args.name }),
       })
       return existing._id
     }
+
+    if (args.event === "updated") return null
 
     return await ctx.db.insert("profiles", {
       clerkId: args.clerkId,
       email: args.email,
       name: args.name,
       avatarUrl: args.avatarUrl,
+      plan: "free",
+    })
+  },
+})
+
+/**
+ * Fallback profile creation for the signed-in user, for when the Clerk
+ * `user.created` webhook is late, lost, or not configured. Called by
+ * useCurrentUser when getCurrent returns null.
+ *
+ * Safe by construction:
+ * - Takes NO arguments. clerkId/email/name come only from ctx.auth, i.e. the
+ *   Clerk-signed JWT that Convex verifies — never from the browser.
+ * - Idempotent: looks up by_clerk_id and inserts only if missing. Convex
+ *   mutations are serializable transactions, so two concurrent calls (or a
+ *   call racing the webhook's syncFromClerk) cannot both insert: the loser
+ *   conflicts on the index read, is retried, and then sees the row.
+ */
+export const ensureMyProfile = mutation({
+  args: {},
+  returns: v.id("profiles"),
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new ConvexError("Not authenticated")
+
+    const existing = await ctx.db
+      .query("profiles")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .unique()
+    if (existing) return existing._id
+
+    return await ctx.db.insert("profiles", {
+      clerkId: identity.subject,
+      email: identity.email ?? "",
+      name: identity.name || undefined,
+      avatarUrl: identity.pictureUrl || undefined,
       plan: "free",
     })
   },

@@ -15,7 +15,11 @@ export const MAX_SOURCES_PER_WRITE = 50
 
 /**
  * Assert that every id in `sourceIds` resolves to a contentItems row owned
- * by `profileId`. Throws ConvexError on the first failure.
+ * by `profileId`, and return the ids deduplicated (first-seen order).
+ * Throws ConvexError on the first failure.
+ *
+ * Callers must persist the RETURNED array, not their raw input: duplicates
+ * would otherwise be stored and repeated in every later Claude prompt.
  *
  * The failure is deliberately indistinguishable between "this id does not
  * exist" and "this id belongs to someone else". Reporting them differently
@@ -28,18 +32,18 @@ export async function assertOwnsSources(
   ctx: QueryCtx | MutationCtx,
   profileId: Id<"profiles">,
   sourceIds: Id<"contentItems">[],
-): Promise<void> {
-  if (sourceIds.length === 0) return
-
-  // Dedupe first: a client sending the same id 200 times should cost one read.
-  const unique = Array.from(new Set(sourceIds))
-
-  if (unique.length > MAX_SOURCES_PER_WRITE) {
+): Promise<Id<"contentItems">[]> {
+  // Cap the RAW length: checking only the deduped length let a request carry
+  // thousands of copies of one id past the limit.
+  if (sourceIds.length > MAX_SOURCES_PER_WRITE) {
     throw new ConvexError({
       code: "TOO_MANY_SOURCES",
       message: `You can attach at most ${MAX_SOURCES_PER_WRITE} sources at once.`,
     })
   }
+
+  // Dedupe: each id costs one read to validate, and is stored once.
+  const unique = Array.from(new Set(sourceIds))
 
   for (const id of unique) {
     const item = await ctx.db.get(id)
@@ -50,4 +54,5 @@ export async function assertOwnsSources(
       })
     }
   }
+  return unique
 }

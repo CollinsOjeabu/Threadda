@@ -2,6 +2,8 @@
 import { action } from "./_generated/server"
 import { internal } from "./_generated/api"
 import { CLAUDE_MODEL } from "./models"
+import { NO_THINKING, readText } from "./lib/claude"
+import { parseIdeas } from "./lib/ideas"
 
 /**
  * Generate content ideas based on user's library items.
@@ -36,6 +38,9 @@ export const getForUser = action({
 
     if (items.length < 1) return []
 
+    // Cost guard: every call below is a paid Claude request.
+    await ctx.runMutation(internal.ideas._claimIdeasRequest, { profileId: userId })
+
     // Build sources context
     const sourcesText = items
       .map(
@@ -58,12 +63,15 @@ Return this exact JSON (no markdown, no preamble, ONLY the JSON array):
   }
 ]`
 
+    let response
     try {
       const Anthropic = (await import("@anthropic-ai/sdk")).default
       const anthropic = new Anthropic()
-      const response = await anthropic.messages.create({
+      response = await anthropic.messages.create({
         model: CLAUDE_MODEL,
-        max_tokens: 500,
+        // Short structured task: no thinking, so the budget is all answer.
+        ...NO_THINKING,
+        max_tokens: 1000,
         messages: [
           {
             role: "user",
@@ -73,18 +81,22 @@ Return this exact JSON (no markdown, no preamble, ONLY the JSON array):
         system:
           "You are a content strategist. Generate content ideas based on research sources. Return ONLY valid JSON array, no markdown, no preamble.",
       })
-
-      const text =
-        response.content[0].type === "text" ? response.content[0].text : ""
-      // Extract JSON from response
-      const jsonMatch = text.match(/\[[\s\S]*\]/)
-      if (!jsonMatch) return []
-
-      const ideas = JSON.parse(jsonMatch[0])
-      return Array.isArray(ideas) ? ideas.slice(0, 4) : []
-    } catch {
-      console.error("Failed to generate content ideas")
+    } catch (e) {
+      console.error("Content ideas: Claude request failed", e)
       return []
     }
+
+    const { text, truncated, refused } = readText(response)
+    if (truncated) {
+      // A cut-off JSON array would parse partially or not at all.
+      console.error("Content ideas: response hit max_tokens; discarding partial output")
+      return []
+    }
+    if (refused || !text) {
+      console.error(`Content ideas: no usable text (stop_reason=${response.stop_reason})`)
+      return []
+    }
+
+    return parseIdeas(text)
   },
 })

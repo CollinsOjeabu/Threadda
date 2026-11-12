@@ -6,6 +6,7 @@ import { v } from "convex/values"
 import { ConvexError } from "convex/values"
 import type { Id } from "./_generated/dataModel"
 import { CLAUDE_MODEL } from "./models"
+import { NO_THINKING, readText, trimToLastSentence } from "./lib/claude"
 
 /**
  * Full URL → content ingestion pipeline.
@@ -77,7 +78,9 @@ export const startIngestion = action({
 
       const summaryResult = await claude.messages.create({
         model: CLAUDE_MODEL,
-        max_tokens: 300,
+        // Short task: no thinking, so the budget is all answer.
+        ...NO_THINKING,
+        max_tokens: 400,
         system:
           "You are a research assistant. Extract the key insight from this article in 2-3 sentences. Be specific and factual. Focus on what is novel or actionable. Return only the summary, no preamble.",
         messages: [
@@ -85,10 +88,10 @@ export const startIngestion = action({
         ],
       })
 
-      const textBlock = summaryResult.content.find(
-        (block: { type: string }) => block.type === "text",
-      )
-      summary = textBlock && "text" in textBlock ? (textBlock as { text: string }).text : ""
+      const { text, truncated } = readText(summaryResult)
+      // A cut-off summary is still useful once the partial sentence is dropped.
+      summary = truncated ? trimToLastSentence(text) : text
+      if (truncated) console.warn("URL summary hit max_tokens; kept complete sentences only")
     } catch (e) {
       // Partial failure — save without summary
       console.error("Claude summarization failed:", e)
@@ -191,7 +194,9 @@ export const processRawText = action({
 
       const summaryResult = await claude.messages.create({
         model: CLAUDE_MODEL,
-        max_tokens: 300,
+        // Short structured task: no thinking, so the budget is all answer.
+        ...NO_THINKING,
+        max_tokens: 400,
         messages: [
           {
             role: "user",
@@ -207,10 +212,9 @@ Respond with valid JSON only. No markdown, no preamble.`,
         ],
       })
 
-      const textBlock = summaryResult.content.find(
-        (block: { type: string }) => block.type === "text",
-      )
-      const raw = textBlock && "text" in textBlock ? (textBlock as { text: string }).text : ""
+      const { text: raw, truncated } = readText(summaryResult)
+      // Cut-off JSON is unusable — fall back to the same path as a failed call.
+      if (truncated) throw new Error("Title/summary response hit max_tokens")
 
       try {
         const parsed = JSON.parse(raw)

@@ -56,6 +56,7 @@ function CanvasPageInner() {
 
   /* ─── Core state machine ─── */
   const [canvasState, setCanvasState] = useState<CanvasState>('constellation')
+  const [startError, setStartError] = useState<string | null>(null)
   const [selectedIds, setSelectedIds] = useState<Id<'contentItems'>[]>([])
   const [activeSessionId, setActiveSessionId] = useState<Id<'canvasSessions'> | null>(null)
   const [activeAgent, setActiveAgent] = useState<'authority' | 'catalyst'>('authority')
@@ -136,6 +137,7 @@ function CanvasPageInner() {
       ?.filter((item) => selectedIds.some((id) => String(id) === String(item._id)))
       .map((item) => item.title) ?? []
 
+    setStartError(null)
     try {
       const sessionId = await createSession({
         name: `Session · ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
@@ -148,8 +150,9 @@ function CanvasPageInner() {
       ])
       setCanvasState('session')
     } catch (e) {
-      setChatMessages([{ role: 'agent', content: parseError(e) }])
-      setCanvasState('session')
+      // No session was created: stay on the source picker and say why,
+      // rather than entering a session view with nothing behind it.
+      setStartError(parseError(e))
     }
   }, [selectedIds, createSession, contentItems])
 
@@ -247,9 +250,11 @@ function CanvasPageInner() {
     }
   }, [generatedPostId, updatePostStatus])
 
-  /* ─── Refine post (silent background call with auth retry) ─── */
+  /* ─── Refine post (background call with auth retry) ───
+   * Throws on failure: PostPreview catches it and shows a toast next to the
+   * post. (Appending to chat hid the error — chat isn't visible in preview.) */
   const handleRefinePost = useCallback(async (instruction: string) => {
-    if (!activeSessionId) return
+    if (!activeSessionId) throw new Error('This session is no longer active. Start a new session to refine.')
     const callAction = () => sendMessageAction({
       sessionId: activeSessionId,
       message: `Here is my current post:\n\n${generatedPost}\n\nPlease apply this change and return ONLY the updated post text, nothing else:\n${instruction}`,
@@ -265,12 +270,11 @@ function CanvasPageInner() {
           const response = await callAction()
           setGeneratedPost(response)
           return
-        } catch { /* fall through to error below */ }
+        } catch (retryErr) {
+          throw new Error(parseError(retryErr))
+        }
       }
-      setChatMessages((prev) => [...prev, {
-        role: 'agent',
-        content: parseError(e),
-      }])
+      throw new Error(parseError(e))
     }
   }, [activeSessionId, generatedPost, sendMessageAction])
 
@@ -487,6 +491,7 @@ function CanvasPageInner() {
             onSendMessage={handleSendMessage}
             onGeneratePost={handleGeneratePost}
             onRefine={handleRefine}
+            notice={startError}
             isGenerating={isGenerating}
             sourcesCount={sourcesCount}
           />
