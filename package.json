@@ -22,7 +22,7 @@
     "framer-motion": "^12.38.0",
     "next": "^16.4.6",
     "openai": "^6.33.0",
-    "pdfjs-dist": "^5.7.284",
+    "pdfjs-dist": "^6.5.438",
     "radix-ui": "^1.4.3",
     "react": "19.2.4",
     "react-dom": "19.2.4",
