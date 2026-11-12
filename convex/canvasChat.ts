@@ -7,6 +7,7 @@ import { ConvexError } from "convex/values"
 import { CLAUDE_MODEL } from "./models"
 import { NO_THINKING, readText } from "./lib/claude"
 import { UNTRUSTED_SOURCES_RULE } from "./lib/untrusted"
+import { assertChatMessage } from "./lib/chat"
 
 /**
  * Send a message to the Canvas AI agent.
@@ -18,6 +19,8 @@ export const sendMessage = action({
     message: v.string(),
   },
   handler: async (ctx, args): Promise<string> => {
+    assertChatMessage(args.message)
+
     const identity = await ctx.auth.getUserIdentity()
     if (!identity) throw new ConvexError("Not authenticated")
 
