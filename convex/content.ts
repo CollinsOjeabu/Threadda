@@ -129,57 +129,6 @@ export const get = query({
 })
 
 /**
- * Create a new content item (manual note, or queued URL for scraping).
- */
-export const create = mutation({
-  args: {
-    userId: v.id("profiles"),
-    type: v.union(
-      v.literal("article"),
-      v.literal("video"),
-      v.literal("note"),
-      v.literal("tweet"),
-      v.literal("pdf"),
-    ),
-    title: v.string(),
-    url: v.optional(v.string()),
-    rawText: v.optional(v.string()),
-    tags: v.optional(v.array(v.string())),
-  },
-  returns: v.id("contentItems"),
-  handler: async (ctx, args) => {
-    // Verify auth + ownership of the userId
-    const identity = await ctx.auth.getUserIdentity()
-    if (!identity) throw new ConvexError("Not authenticated")
-
-    const profile = await ctx.db
-      .query("profiles")
-      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
-      .unique()
-    if (!profile) throw new ConvexError("Profile not found")
-
-    if (args.userId !== profile._id) {
-      throw new ConvexError({ code: "FORBIDDEN", message: "Not authorized to create content for this user" })
-    }
-
-    if (args.title.trim().length === 0) {
-      throw new ConvexError({ code: "VALIDATION", message: "Title is required" })
-    }
-
-    const isNote = args.type === "note"
-    return await ctx.db.insert("contentItems", {
-      userId: args.userId,
-      type: args.type,
-      title: args.title.trim(),
-      url: args.url,
-      rawText: args.rawText,
-      tags: args.tags,
-      status: isNote ? "ready" : "queued",
-    })
-  },
-})
-
-/**
  * Delete a content item by its ID.
  */
 export const remove = mutation({
