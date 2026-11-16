@@ -56,7 +56,7 @@ export function EarlyAccessForm() {
     return (
       <div className={`${card} lp-swap`} role="status" aria-live="polite">
         <h3 className="h-display text-[1.25rem] leading-[1.75rem] tracking-[-0.03em]">You&apos;re on the list — we&apos;ll write once when your wave opens.</h3>
-        <p className="mt-3 text-[0.6875rem] text-lp-muted">No credit card. Nothing to install.</p>
+        <p className="mt-3 text-[0.6875rem] text-lp-muted">Nothing to install. It runs in your browser.</p>
       </div>
     )
   }
@@ -132,7 +132,7 @@ export function EarlyAccessForm() {
       <p id="ea-error" role="alert" className="mt-3 text-center text-[0.8125rem] text-[#b42318] empty:hidden">
         {error}
       </p>
-      <p className="mt-[1rem] text-center text-[0.6875rem] leading-[0.875rem] text-lp-muted">No credit card. Nothing to install.</p>
+      <p className="mt-[1rem] text-center text-[0.6875rem] leading-[0.875rem] text-lp-muted">Nothing to install. Just your email.</p>
       <p className="mt-[0.5rem] text-center text-[0.6875rem] leading-[0.875rem] text-lp-muted">
         We use your email only for launch updates and access. <a href="/privacy" className="underline underline-offset-2 hover:text-lp-ink">Privacy</a>
       </p>

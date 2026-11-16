@@ -21,7 +21,7 @@ const FAQS = [
   },
   {
     q: "What does it cost?",
-    a: "It's free for the length of the beta. No card to start.",
+    a: "Threadda will be a paid product. Pricing comes with the full launch, and people on the list hear it first.",
   },
 ]
 

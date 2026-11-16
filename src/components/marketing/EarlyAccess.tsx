@@ -1,7 +1,7 @@
 import { EarlyAccessForm } from "./EarlyAccessForm"
 import { Line, delay } from "./Line"
 
-const PERKS = ["Free for the length of the beta", "One email when your wave opens", "No card, no sales call"]
+const PERKS = ["Invite-only, in small waves", "One email when your wave opens", "Your email is all we ask for"]
 
 export function EarlyAccess() {
   return (

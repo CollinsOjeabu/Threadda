@@ -30,7 +30,7 @@ export function Hero() {
               Explore Threadda <span aria-hidden="true" className="lp-nudge-down">↓</span>
             </a>
           </div>
-          <p className="mt-4 num text-lp-muted">Free during beta. No card, no sales call.</p>
+          <p className="mt-4 num text-lp-muted">Invite-only early access · We&apos;ll let you in in waves</p>
         </div>
       </div>
     </div>
