@@ -20,11 +20,11 @@ export default function SignUpPage() {
           <div className="flex items-center gap-6 text-cream-muted text-sm">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-success" />
-              <span>Free to start</span>
+              <span>Invite-only early access</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-success" />
-              <span>No credit card</span>
+              <span>Use the email your invite went to</span>
             </div>
           </div>
         </div>

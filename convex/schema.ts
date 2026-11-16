@@ -160,5 +160,6 @@ export default defineSchema({
     platform: v.union(v.literal("linkedin"), v.literal("x"), v.literal("both")),
     createdAt: v.number(),
     source: v.literal("landing"),
+    invitedAt: v.optional(v.number()), // set by waitlistInvite.invite when a Clerk invitation is sent
   }).index("by_email", ["email"]),
 })

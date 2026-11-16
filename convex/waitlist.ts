@@ -1,4 +1,4 @@
-import { mutation } from "./_generated/server"
+import { mutation, internalMutation } from "./_generated/server"
 import { components } from "./_generated/api"
 import { v, ConvexError } from "convex/values"
 import { RateLimiter, MINUTE } from "@convex-dev/rate-limiter"
@@ -64,5 +64,25 @@ export const join = mutation({
     }
 
     return { ok: true as const }
+  },
+})
+
+/**
+ * Stamp `invitedAt` on a waitlist row after a Clerk invitation goes out.
+ * Called only by `waitlistInvite.invite`. Returns whether the email was on
+ * the list; an invite to someone who never joined still goes out, it just
+ * has no row to mark.
+ */
+export const markInvited = internalMutation({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    const email = args.email.trim().toLowerCase()
+    const row = await ctx.db
+      .query("waitlist")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .first()
+    if (!row) return { onWaitlist: false }
+    await ctx.db.patch(row._id, { invitedAt: Date.now() })
+    return { onWaitlist: true }
   },
 })

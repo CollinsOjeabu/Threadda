@@ -42,6 +42,7 @@ import type * as theme from "../theme.js";
 import type * as users from "../users.js";
 import type * as voiceDna from "../voiceDna.js";
 import type * as waitlist from "../waitlist.js";
+import type * as waitlistInvite from "../waitlistInvite.js";
 
 import type {
   ApiFromModules,
@@ -84,6 +85,7 @@ declare const fullApi: ApiFromModules<{
   users: typeof users;
   voiceDna: typeof voiceDna;
   waitlist: typeof waitlist;
+  waitlistInvite: typeof waitlistInvite;
 }>;
 
 /**

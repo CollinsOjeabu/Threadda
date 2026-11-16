@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest"
 import rateLimiterTest from "@convex-dev/rate-limiter/test"
-import { api } from "../convex/_generated/api"
+import { api, internal } from "../convex/_generated/api"
 import { WAITLIST_JOINS_PER_MINUTE } from "../convex/waitlist"
 import { makeT } from "./setup"
 
@@ -58,5 +58,23 @@ describe("waitlist.join", () => {
   test("still rejects malformed emails", async () => {
     const t = setup()
     await expect(t.mutation(api.waitlist.join, { email: "nope", platform: "x" })).rejects.toThrow()
+  })
+})
+
+describe("waitlist.markInvited", () => {
+  test("stamps invitedAt on the matching row, matching email case-insensitively", async () => {
+    const t = setup()
+    await t.mutation(api.waitlist.join, { email: "ada@example.com", platform: "x" })
+    const r = await t.mutation(internal.waitlist.markInvited, { email: " Ada@Example.com " })
+    expect(r).toEqual({ onWaitlist: true })
+    const row = await t.run(async (ctx) => ctx.db.query("waitlist").first())
+    expect(typeof row?.invitedAt).toBe("number")
+  })
+
+  test("reports an email that never joined, without writing a row", async () => {
+    const t = setup()
+    const r = await t.mutation(internal.waitlist.markInvited, { email: "nobody@example.com" })
+    expect(r).toEqual({ onWaitlist: false })
+    expect(await rows(t)).toBe(0)
   })
 })

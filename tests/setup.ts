@@ -7,7 +7,7 @@ import schema from "../convex/schema"
 // these tests only call queries and mutations.
 const all = import.meta.glob("../convex/**/*.*s")
 const modules = Object.fromEntries(
-  Object.entries(all).filter(([path]) => !/\/convex\/(ideasActions|canvasChat|generation|ingestion|voiceDna|embeddingsActions|graphCompute)\.ts$/.test(path)),
+  Object.entries(all).filter(([path]) => !/\/convex\/(ideasActions|canvasChat|generation|ingestion|voiceDna|embeddingsActions|graphCompute|waitlistInvite)\.ts$/.test(path)),
 )
 
 export const makeT = () => convexTest(schema, modules)
