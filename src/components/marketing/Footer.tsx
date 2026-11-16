@@ -4,8 +4,8 @@ import { Line } from "./Line"
 const mono = "font-lp-mono uppercase"
 
 const COLUMNS = [
-  { title: "Explore", links: [["Workspace", "#product"], ["How it works", "#how"], ["Voice", "#voice"]] },
-  { title: "A little more", links: [["Platforms", "#room"], ["Who it’s for", "#who"], ["FAQ", "#faq"]] },
+  { title: "Explore", links: [["Workspace", "/#product"], ["How it works", "/#how"], ["Voice", "/#voice"]] },
+  { title: "A little more", links: [["Platforms", "/#room"], ["Who it’s for", "/#who"], ["FAQ", "/#faq"]] },
 ]
 
 export function Footer() {
@@ -39,7 +39,7 @@ export function Footer() {
       </p>
 
       <div data-reveal="fade" className={`${mono} mt-[3.5rem] grid gap-3 border-t border-[#dddbd5] pt-[1.5rem] text-[0.625rem] leading-[0.75rem] tracking-[0.12em] text-lp-muted sm:grid-cols-3`}>
-        <p>© 2026 Threadda</p>
+        <p>© 2026 Threadda · <a href="/privacy" className="lp-navlink hover:text-lp-ink">Privacy</a></p>
         <p className="sm:text-center">Read deeply. Think freely. Write like yourself.</p>
         <a href="#" className="lp-hover inline-flex items-center gap-[0.5625rem] transition-colors hover:text-lp-ink sm:justify-self-end">
           Back to the beginning

@@ -15,9 +15,7 @@ export function Nav() {
           <a href="#faq" className="lp-navlink hover:text-lp-ink">FAQ</a>
         </nav>
         <div className="flex items-center gap-3.5 sm:gap-6">
-          <Link href="/sign-in" className="lp-navlink whitespace-nowrap text-[0.8125rem] font-medium text-lp-body hover:text-lp-ink">
-            Log in
-          </Link>
+          {/* "Log in" is hidden while sign-ups are invite-only; /sign-in still works directly. */}
           <a
             href="#early"
             className="lp-hover lp-press group inline-flex items-center gap-2.5 rounded-full border border-lp-ink/15 pl-4 pr-1.5 py-1.5 text-[0.8125rem] font-medium text-lp-ink hover:border-lp-ink/30 transition whitespace-nowrap"
