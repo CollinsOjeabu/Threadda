@@ -3,8 +3,7 @@ import Link from "next/link"
 import { ThreaddaLogo } from "@/components/marketing/ThreaddaLogo"
 import { Footer } from "@/components/marketing/Footer"
 
-// TODO(launch): replace with the real contact address before going live.
-const CONTACT_EMAIL = "[CONTACT EMAIL]"
+const CONTACT_EMAIL = "privacy@threadda.com"
 const LAST_UPDATED = "16 November 2026"
 
 export const metadata: Metadata = {
