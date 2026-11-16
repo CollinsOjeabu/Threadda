@@ -62,6 +62,18 @@ export default function RootLayout({
             __html: `(function(){try{var t=localStorage.getItem('threadda-theme');if(!t){var l=localStorage.getItem('echora-theme');if(l){t=l==='eden'?'dark':l;localStorage.setItem('threadda-theme',t);localStorage.removeItem('echora-theme');}}if(t&&['void','dark','light'].includes(t)){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();`,
           }}
         />
+        {/* Landing motion: mark JS as available before first paint so scroll entrances start
+            hidden, not flashed. It lives here because the root layout never remounts: a <script>
+            in the marketing layout gets re-created by React on client navigation, which never
+            runs it and logs a dev error. Client navigations rely on LandingMotion adding the
+            class instead. If LandingMotion hasn't booted within 4s, the class is removed and
+            __lpMotionOff is set, so a late boot leaves the already-visible content alone. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "if(location.pathname==='/'){document.documentElement.classList.add('lp-js');setTimeout(function(){if(!window.__lpMotion){window.__lpMotionOff=true;document.documentElement.classList.remove('lp-js')}},4000)}",
+          }}
+        />
       </head>
       <body className="min-h-screen antialiased">
         <ConvexClerkProvider>

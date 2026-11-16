@@ -8,7 +8,7 @@ import { useEffect } from "react"
  *  - [data-stagger] → its [data-reveal] descendants get an index (--i) and reveal together with the group
  *  - .lp-line       → masked heading lines get a line index (--l)
  *  - nav scroll state, reading-progress thread, and scrollspy for the primary nav
- * The inline script in page.tsx adds html.lp-js before first paint; without JS nothing is ever hidden.
+ * The inline script in the root layout adds html.lp-js before first paint; without JS nothing is ever hidden.
  */
 export function LandingMotion() {
   useEffect(() => {
