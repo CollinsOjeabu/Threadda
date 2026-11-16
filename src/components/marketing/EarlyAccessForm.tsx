@@ -133,6 +133,9 @@ export function EarlyAccessForm() {
         {error}
       </p>
       <p className="mt-[1rem] text-center text-[0.6875rem] leading-[0.875rem] text-lp-muted">No credit card. Nothing to install.</p>
+      <p className="mt-[0.5rem] text-center text-[0.6875rem] leading-[0.875rem] text-lp-muted">
+        We use your email only for launch updates and access. <a href="/privacy" className="underline underline-offset-2 hover:text-lp-ink">Privacy</a>
+      </p>
     </form>
   )
 }

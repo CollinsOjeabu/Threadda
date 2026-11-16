@@ -106,6 +106,9 @@ export function LandingMotion() {
     })
 
     return () => {
+      // Leaving the landing page: other pages (e.g. /privacy) reuse [data-reveal] markup
+      // but have no observer, so they must not inherit the hidden-until-revealed state.
+      root.classList.remove("lp-js")
       reveal.disconnect()
       spy.disconnect()
       window.removeEventListener("scroll", onScroll)
