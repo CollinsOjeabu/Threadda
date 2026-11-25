@@ -97,12 +97,12 @@ export function HowItWorks() {
             step="03"
             tint="bg-[#f5f7dd] pt-[4.1875rem]"
             title="Shape it for the room"
-            body="The draft arrives in your voice, built for LinkedIn or X. You edit, you decide, you post. Nothing goes out without you."
+            body="The draft arrives in your voice, built for LinkedIn, with X coming next. You edit, you decide, you post. Nothing goes out without you."
           >
             <div style={follow(0)} className="lp-follow overflow-hidden rounded-[0.6875rem] border border-[#ececec] bg-lp-paper shadow-[0_0.0625rem_0.125rem_rgba(33,35,44,0.03)]">
               <div className="flex h-[2.25rem] items-center gap-[0.75rem] border-b border-[#f0f0f0] pl-[0.5rem] pr-[0.625rem]">
                 <span className="flex h-[1.4375rem] items-center rounded-[0.3125rem] bg-lp-ink px-[0.5rem] text-[0.6875rem] font-medium text-lp-paper">LinkedIn</span>
-                <span className="text-[0.6875rem] text-[#8e9096]">X</span>
+                <span className="cursor-default select-none text-[0.6875rem] text-[#8e9096]">X · soon</span>
                 <span className="ml-auto font-lp-mono text-[0.625rem] text-[#96979d]">draft</span>
               </div>
               <p className="px-[0.8125rem] pt-[0.6875rem] pb-[0.625rem] text-[0.75rem] leading-[1.0312rem] text-[#6f727a]">

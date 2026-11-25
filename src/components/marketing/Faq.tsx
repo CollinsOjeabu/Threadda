@@ -1,15 +1,15 @@
 const FAQS = [
   {
     q: "Is this just ChatGPT with a nicer editor?",
-    a: "No. A general model writes from your prompt and starts from zero every time. Threadda starts from the full source — the study, the report, the thread — and from a model of your published voice. The angle is chosen before a single word of draft is written.",
+    a: "No. A general model writes from your prompt and starts from zero every time. Threadda starts from the full source — the study, the report, the thread — and from a model of your voice. The angle is chosen before a single word of draft is written.",
   },
   {
     q: "Do I have to hand over my whole posting history?",
-    a: "No. A handful of posts you're proud of is enough to start. The more you publish through Threadda, the closer the voice gets.",
+    a: "No. Three short questions are enough to start, and you can paste in a few posts you're proud of. Every edit you make brings the voice closer.",
   },
   {
     q: "Which platforms does it write for?",
-    a: "LinkedIn and X — each with its own voice and format, not one draft reflowed into two boxes.",
+    a: "LinkedIn first. X is next, and it gets its own voice and format, not one draft squeezed into two boxes.",
   },
   {
     q: "What can I put in?",

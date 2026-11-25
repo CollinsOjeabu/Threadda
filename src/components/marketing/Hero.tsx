@@ -16,7 +16,7 @@ export function Hero() {
         </div>
         <div data-intro style={delay(520)} className="pb-3">
           <p className="text-[0.9375rem] leading-[1.6] text-lp-body max-w-[26rem]">
-            Threadda turns the things you read into a point of view you&apos;d actually post — an opinionated angle, in your own voice, ready for LinkedIn or X.
+            Threadda turns the things you read into a point of view you&apos;d actually post — an opinionated angle, in your own voice, ready for LinkedIn.
           </p>
           <div className="mt-7 flex flex-wrap items-center gap-5">
             <a
