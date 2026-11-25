@@ -66,6 +66,43 @@
   --color-lp-navy-line: #333a4d;
   --color-lp-line: rgba(33, 35, 44, 0.10);
   --color-lp-line-2: #e4e3dc;
+
+  /* ─── App palette (td- namespace; design/app/DESIGN.md + official-tokens.css).
+         Used only inside .td-root. Light only: the app has no dark theme. ─── */
+  /* Surfaces */
+  --color-td-paper: #fdfdfc;
+  --color-td-cream: #f7f7f2;
+  --color-td-panel: #f1f0e9;
+  --color-td-sage: #dee5db;
+  /* Text */
+  --color-td-ink: #21232c;
+  --color-td-body: #54565f;
+  --color-td-muted: #6b6d76;
+  --color-td-placeholder: #a8a7ab;
+  /* Blue, the one accent */
+  --color-td-blue: #3750f1;
+  --color-td-blue-700: #2b41d8;
+  --color-td-blue-wash: #f1f3fb;
+  --color-td-blue-line: #5a6ff2;
+  /* Lines */
+  --color-td-line: rgba(33, 35, 44, 0.10);
+  --color-td-line-2: #e4e3dc;
+  --color-td-rule: #c9c8c0;
+  --color-td-card-line: #dddbd5;
+  --color-td-field-line: #d3d1ca;
+  --color-td-toggle-line: #dad9d3;
+  /* Other */
+  --color-td-avatar: #eeede7;
+  --color-td-danger: #b42318;
+
+  --radius-td-tag: 4px;
+  --radius-td-control: 10px;
+  --radius-td-card: 14px;
+  --radius-td-panel: 16px;
+  --radius-td-pill: 9999px;
+
+  --ease-td: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-td-io: cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 /* Marketing fonts: the source variables are set on .lp-root by app/(marketing)/layout.tsx,
@@ -74,6 +111,47 @@
   --font-lp-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
   --font-lp-serif: var(--font-instrument-serif), Georgia, serif;
   --font-lp-mono: var(--font-plex-mono), ui-monospace, monospace;
+}
+
+/* App fonts: same source variables (src/lib/fonts.ts). Put `fontVariables` on the
+   .td-root element so they resolve. */
+@theme inline {
+  --font-td-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-td-serif: var(--font-instrument-serif), Georgia, serif;
+  --font-td-mono: var(--font-plex-mono), ui-monospace, monospace;
+}
+
+/* Every new app screen sits inside .td-root. */
+.td-root {
+  color-scheme: light;
+  /* Literal values: @theme variables may be tree-shaken when unused by utilities. */
+  background: #fdfdfc; /* td-paper */
+  color: #21232c; /* td-ink */
+  font-family: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.td-root ::selection {
+  background: rgba(55, 80, 241, 0.18);
+}
+
+/* Skeleton sheen (reference-app.html .bar-g). Off under reduced motion. */
+@keyframes td-sheen {
+  from { background-position: 100% 0; }
+  to { background-position: 0 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .td-root *,
+  .td-root *::before,
+  .td-root *::after {
+    transition: none !important;
+    animation: none !important;
+  }
 }
 
 /* ── Base ── */

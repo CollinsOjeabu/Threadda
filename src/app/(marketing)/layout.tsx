@@ -1,29 +1,7 @@
 import type { Metadata } from "next"
-import { Manrope, Instrument_Serif, IBM_Plex_Mono } from "next/font/google"
 import { SITE_URL } from "@/lib/site"
+import { fontVariables } from "@/lib/fonts"
 import "./marketing.css"
-
-const manrope = Manrope({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-manrope",
-  display: "swap",
-})
-
-const instrumentSerif = Instrument_Serif({
-  subsets: ["latin"],
-  weight: "400",
-  style: "italic",
-  variable: "--font-instrument-serif",
-  display: "swap",
-})
-
-const plexMono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-plex-mono",
-  display: "swap",
-})
 
 const TITLE = "Threadda — Turn what you read into a point of view"
 const DESCRIPTION =
@@ -51,7 +29,7 @@ export const metadata: Metadata = {
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
     <div
-      className={`lp-root min-h-screen ${manrope.variable} ${instrumentSerif.variable} ${plexMono.variable}`}
+      className={`lp-root min-h-screen ${fontVariables}`}
     >
       {/* html.lp-js is set before first paint by the inline script in the root layout's <head>. */}
       {children}
