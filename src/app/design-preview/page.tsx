@@ -8,9 +8,12 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
-/** Development-only style guide for the td components. */
+/**
+ * Style guide for the td components. Hidden only on the live site
+ * (VERCEL_ENV "production"); visible in dev, local builds and Vercel previews.
+ */
 export default function DesignPreviewPage() {
-  if (process.env.NODE_ENV === "production") notFound()
+  if (process.env.VERCEL_ENV === "production") notFound()
   return (
     <TdRoot className="min-h-screen">
       <Preview />
