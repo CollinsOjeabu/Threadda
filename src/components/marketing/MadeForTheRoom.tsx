@@ -53,7 +53,7 @@ export function MadeForTheRoom() {
           <Line><span className="serif-i text-lp-ink">Different energy.</span></Line>
         </h2>
         <p data-reveal className="max-w-[15.75rem] text-[0.875rem] leading-[1.6562rem] text-lp-muted lg:-mb-[0.125rem]">
-          A LinkedIn post isn&apos;t a stretched-out tweet. An X thread isn&apos;t a chopped-up essay. Your point stays. The delivery adapts.
+          A LinkedIn post isn&apos;t a stretched-out tweet. An X thread isn&apos;t a chopped-up essay. Your point stays. The delivery adapts. LinkedIn is first. X follows.
         </p>
       </div>
 
@@ -100,9 +100,15 @@ export function MadeForTheRoom() {
           platform="X"
           caption="One idea per post. Momentum from the first line."
           badge={
-            <svg aria-label="X" role="img" viewBox="0 0 24 24" className="h-[1.0625rem] w-[1.0625rem] shrink-0 text-lp-ink" fill="currentColor">
-              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-            </svg>
+            <span className="flex shrink-0 items-center gap-[0.625rem]">
+              {/* Same pill as "All changes saved" in WorkbenchDemo, in Manrope */}
+              <span className="flex h-5 items-center rounded-full border border-[#dddbd5] px-2.5 text-[0.625rem] font-medium text-lp-muted">
+                Coming next
+              </span>
+              <svg aria-label="X" role="img" viewBox="0 0 24 24" className="h-[1.0625rem] w-[1.0625rem] shrink-0 text-lp-ink" fill="currentColor">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+              </svg>
+            </span>
           }
         >
           <div className="flex gap-[0.75rem] px-[1.25rem] pt-[1.3125rem] pb-[1.3125rem]">

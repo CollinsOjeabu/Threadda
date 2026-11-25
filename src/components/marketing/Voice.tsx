@@ -36,7 +36,7 @@ export function Voice() {
               <Line>Not everyone.</Line>
             </h2>
             <p data-reveal className="mt-[1.75rem] max-w-[19.25rem] text-[0.8125rem] leading-[1.5938rem] text-[#96989c]">
-              Your sentence rhythm. The side you take. The words you&apos;d never use. Threadda learns from your published writing, so every draft starts a little closer to you.
+              Your sentence rhythm. The side you take. The words you&apos;d never use. Threadda learns it from a few questions and anything you&apos;ve already written, so every draft starts a little closer to you.
             </p>
 
             <div data-reveal className="mt-[2.5rem] border-t border-[#3d414f] pt-[1.75rem]">

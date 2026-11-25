@@ -29,7 +29,7 @@ export function Workbench() {
             <svg viewBox="0 0 12 12" className="h-[0.6875rem] w-[0.6875rem]" fill="none" stroke="currentColor" strokeWidth="1" aria-hidden="true">
               <path d="M1.5 1.5 10.5 4.8 6.6 6.6 4.8 10.5Z" strokeLinejoin="round" />
             </svg>
-            Try it: pick a source, then an angle
+            Try it: pick a source to see where it sits in the thread, then pick an angle.
           </p>
           <p>Illustrative product preview</p>
         </div>

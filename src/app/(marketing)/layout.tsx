@@ -27,7 +27,7 @@ const plexMono = IBM_Plex_Mono({
 
 const TITLE = "Threadda — Turn what you read into a point of view"
 const DESCRIPTION =
-  "Threadda turns the things you read into a point of view you'd actually post — an opinionated angle, in your own voice, ready for LinkedIn or X."
+  "Threadda turns the things you read into a point of view you'd actually post — an opinionated angle, in your own voice, ready for LinkedIn."
 
 const OG_IMAGE = {
   url: "/images/og-threadda.png",
