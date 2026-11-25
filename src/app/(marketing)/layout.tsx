@@ -29,6 +29,13 @@ const TITLE = "Threadda — Turn what you read into a point of view"
 const DESCRIPTION =
   "Threadda turns the things you read into a point of view you'd actually post — an opinionated angle, in your own voice, ready for LinkedIn or X."
 
+const OG_IMAGE = {
+  url: "/images/og-threadda.png",
+  width: 1200,
+  height: 630,
+  alt: "Threadda: Good reads. Great takes.",
+}
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: TITLE,
@@ -38,11 +45,13 @@ export const metadata: Metadata = {
     type: "website",
     url: "/",
     siteName: "Threadda",
+    images: [OG_IMAGE],
     title: TITLE,
     description: DESCRIPTION,
   },
   twitter: {
     card: "summary_large_image",
+    images: [OG_IMAGE.url],
     title: TITLE,
     description: DESCRIPTION,
   },
