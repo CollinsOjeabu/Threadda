@@ -77,12 +77,21 @@ type ButtonOwnProps = VariantProps<typeof buttonVariants> & {
 export type ButtonProps = ButtonOwnProps &
   Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, keyof ButtonOwnProps>
 
-function Chip({ size }: { size: keyof typeof chipSize }) {
+// Right padding when an outline button carries a chip, so it hugs the chip like primary does.
+const outlineChipPadding = {
+  md: "pl-[22px] pr-2",
+  default: "pl-5 pr-1.5",
+  sm: "pl-3.5 pr-1",
+} as const
+
+function Chip({ size, tone }: { size: keyof typeof chipSize; tone: "light" | "ink" }) {
   return (
     <span
       aria-hidden="true"
       className={cn(
-        "grid shrink-0 place-items-center rounded-full bg-white/20 transition-transform duration-200 ease-td group-hover/btn:rotate-45",
+        "grid shrink-0 place-items-center rounded-full transition-transform duration-200 ease-td group-hover/btn:rotate-45",
+        // On blue: white 20%. On an outline pill: ink chip with a cream arrow (DESIGN.md §5).
+        tone === "ink" ? "bg-td-ink text-td-cream" : "bg-white/20",
         chipSize[size],
       )}
     >
@@ -105,11 +114,17 @@ export function Button({
   const v = variant ?? "primary"
   const s = size ?? "default"
   const showChip = arrow ?? v === "primary"
-  const classes = cn(buttonVariants({ variant: v, size: s }), className)
+  const tone = v === "primary" ? "light" : "ink"
+  const classes = cn(
+    buttonVariants({ variant: v, size: s }),
+    showChip && v === "outline" && cn("gap-2.5", outlineChipPadding[s]),
+    className,
+  )
+  const chip = showChip && <Chip size={s} tone={tone} />
   const content = (
     <>
       {children}
-      {showChip && <Chip size={s} />}
+      {chip}
     </>
   )
 
@@ -120,7 +135,7 @@ export function Button({
       children: (
         <>
           {child.props.children}
-          {showChip && <Chip size={s} />}
+          {chip}
         </>
       ),
     })

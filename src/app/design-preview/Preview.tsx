@@ -71,7 +71,7 @@ export function Preview() {
 
         <Section
           title="Buttons"
-          note="A gallery: in a real view, only one primary. Hover a primary to turn its chip; press scales to 0.97."
+          note="A gallery: in a real view, only one primary. Outline can carry an ink chip with a cream arrow (arrow prop). Hover turns the chip; press scales to 0.97."
         >
           {(["md", "default", "sm"] as const).map((size) => (
             <div key={size} className="mb-6">
@@ -82,6 +82,9 @@ export function Preview() {
                 <Button size={size}>Save my voice</Button>
                 <Button size={size} variant="outline">
                   Second opinion
+                </Button>
+                <Button size={size} variant="outline" arrow>
+                  Schedule
                 </Button>
                 <Button size={size} variant="text">
                   Push back

@@ -1,3 +1,4 @@
+export { TdRoot } from "./TdRoot"
 export { Logo, LogoMark } from "./Logo"
 export { Button, buttonVariants, ArrowUpRight } from "./Button"
 export { FolioMark } from "./FolioMark"
